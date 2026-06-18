@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Honcho UI Dashboard</title>
@@ -1027,16 +1025,14 @@
                 Honcho UI
             </div>
             <div class="health-status" id="health-status">
-                <span class="status-dot" id="health-dot"></span>
-                <span id="health-text">Checking health...</span>
+                <span class="status-dot online" id="health-dot"></span>
+                <span id="health-text">Connected to API</span>
             </div>
         </div>
 
         <div class="workspace-selector-container">
             <label for="workspace-select">Workspace</label>
-            <select id="workspace-select" class="workspace-select" disabled>
-                <option value="">Loading workspaces...</option>
-            </select>
+            <select id="workspace-select" class="workspace-select"><option value="hermes-workspace">hermes-workspace</option><option value="hermes">hermes</option></select>
         </div>
 
         <nav>
@@ -1078,7 +1074,7 @@
     <!-- MAIN PANEL -->
     <main>
         <!-- Top Error Banner -->
-        <div class="error-banner" id="global-error-banner">
+        <div class="error-banner" id="global-error-banner" style="display: none;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon>
                 <line x1="12" y1="8" x2="12" y2="12"></line>
@@ -1088,7 +1084,7 @@
         </div>
 
         <header>
-            <div class="header-title" id="current-workspace-title">Workspace: None</div>
+            <div class="header-title" id="current-workspace-title">Workspace: hermes</div>
             <button class="refresh-btn" id="refresh-btn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="23 4 23 10 17 10"></polyline>
@@ -1106,23 +1102,23 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="label">Total Conclusions</div>
-                        <div class="value" id="stat-conclusions">-</div>
+                        <div class="value" id="stat-conclusions">1266</div>
                         <div class="sub-value">Persisted facts and profiles</div>
                     </div>
                     <div class="stat-card">
                         <div class="label">Total Sessions</div>
-                        <div class="value" id="stat-sessions">-</div>
+                        <div class="value" id="stat-sessions">99</div>
                         <div class="sub-value">Conversation contexts</div>
                     </div>
                     <div class="stat-card">
                         <div class="label">Total Observations</div>
-                        <div class="value" id="stat-observations">-</div>
+                        <div class="value" id="stat-observations">3</div>
                         <div class="sub-value">Synthesized session summaries</div>
                     </div>
                     <div class="stat-card">
                         <div class="label">Last Activity</div>
-                        <div class="value" id="stat-last-activity" style="font-size: 1.15rem; font-weight: 600; padding: 6px 0;">-</div>
-                        <div class="sub-value" id="stat-last-activity-sub">Most recent change</div>
+                        <div class="value" id="stat-last-activity" style="font-size: 1.15rem; font-weight: 600; padding: 6px 0;">1 hour ago</div>
+                        <div class="sub-value" id="stat-last-activity-sub">June 18, 2026 at 2:46 PM</div>
                     </div>
                 </div>
 
@@ -1131,15 +1127,66 @@
                     <div class="pane">
                         <div class="pane-title">
                             Aggregated Peer Profile
-                            <div class="peer-selector-tabs" id="peer-selector-tabs" style="display: none;">
-                                <!-- Will be loaded dynamically -->
-                            </div>
+                            <div class="peer-selector-tabs" id="peer-selector-tabs" style="display: flex;">
+                        <button class="peer-tab active" data-peer-id="tarik">tarik</button>
+                    
+                        <button class="peer-tab " data-peer-id="hermes">hermes</button>
+                    </div>
                         </div>
-                        <div id="overview-peer-context" class="markdown-body">
-                            <div class="empty-state">
-                                <span class="empty-state-title">Select a workspace to view profiles</span>
-                            </div>
-                        </div>
+                        <div id="overview-peer-context" class="markdown-body"><h2>Explicit Observations</h2>
+<p>[2026-06-11 17:11:28] tarik instructed hermes to run a test on June 11, 2026, at 16:50:56, saying 'Test et bakalim'.<br>[2026-06-11 17:11:28] tarik asked hermes on June 11, 2026, at 16:54:38, if he can view Honcho data through a user interface, inquiring 'bide ben honchoyu ui olarak görebilirmiyim öyle bisey varmi?'.<br>[2026-06-11 17:11:28] tarik asked hermes on June 11, 2026, at 16:52:10, whether all previous messages are stored in Honcho ('Eski mesajlarin hepsi honchodami?').<br>[2026-06-11 17:11:28] tarik requested on June 11, 2026, at 17:11:28, that hermes provide a prompt in English for tarik to give to his other AI tools to collect information from them.<br>[2026-06-11 17:11:28] tarik declined a UI dashboard offer from hermes on June 11, 2026, at 16:57:31, saying not now ('Yok istersem yapariz sonra şuan mühim degil').<br>[2026-06-11 17:11:28] tarik instructed hermes on June 11, 2026, at 16:54:38, to transfer existing chat summaries to Honcho ('Olur yap').<br>[2026-06-11 17:11:28] tarik communicated with hermes on June 11, 2026, at 16:49:31, using Turkish phrases like 'Oldumu reis'.<br>[2026-06-11 17:11:28] tarik offered on June 11, 2026, at 17:10:39, to share information about other AI tools he uses, asking 'Sana diğer kullandim yapay zekalardan info vereyimmi'.<br>[2026-06-11 17:12:54] tarik is a user who communicates in Turkish and English, as shown by his response 'Sanki kötü bi prompt verdin bana benim hakkimdaki bilgi yeri çok detaylı değil az bilgi alırsın sanki' to hermes on June 11, 2026 at 17:12:54.<br>[2026-06-11 17:12:54] tarik has multiple AIs ('Kaç tane AI'ın varsa hepsine ayrı ayrı uygula'), as referenced in hermes's message on June 11, 2026 at 17:11:28, and tarik does not contradict this in his reply.<br>[2026-06-11 17:12:54] tarik is interacting with an AI named hermes, as indicated by the message from hermes on June 11, 2026 at 17:11:28 and tarik's reply on June 11, 2026 at 17:12:54.<br>[2026-06-11 17:12:54] tarik is evaluating a prompt provided by hermes, stating that the prompt is bad ('kötü bi prompt') and that it will yield little information about tarik because the prompt's section about tarik's data and preferences is not detailed enough, as per his message on June 11, 2026 at 17:12:54.<br>[2026-06-11 17:12:54] tarik has a memory system ('memory'me') and a system called Honcho ('Honcho'ya') where important information is saved, as stated by hermes on June 11, 2026 at 17:11:28, and tarik does not correct or deny this.<br>[2026-06-11 17:14:16] tarik follows Turkish football closely as a dedicated supporter of Fenerbahçe.<br>[2026-06-11 17:14:16] tarik uses the Gemini AI architecture (as of the current operational year 2026).<br>[2026-06-11 17:14:16] tarik is a student in a final-year graduating class (Abschlussklasse).<br>[2026-06-11 17:14:16] tarik's name is Tarık.<br>[2026-06-11 17:14:16] tarik pays attention to fitness nutrition, specifically macronutrient values and creatine.<br>[2026-06-11 17:14:16] tarik's formality shifts between direct technical peer-to-peer communication and structured German formal prose for official documentation.<br>[2026-06-11 17:14:16] tarik is actively pursuing an IT career path, specifically aiming for vocational training as a Fachinformatiker für Systemintegration (Specialist for System Integration).<br>[2026-06-11 17:14:16] tarik is located in Bavaria, Germany, specifically Eschau.<br>[2026-06-11 17:14:16] tarik's AI assistant prioritizes clear, scannable, and organized responses using structured formatting tools like headings, bolding, bullet points, and tables.<br>[2026-06-11 17:14:16] tarik's AI assistant uses LaTeX strictly for formal or complex mathematical equations, defaulting to standard Markdown prose for numbers, percentages, and daily units.<br>[2026-06-11 17:14:16] tarik's AI assistant has integrated code execution tools, markdown formatting, technical synthesis capabilities, and a memory/context abstraction layer for retaining user preferences across sessions.<br>[2026-06-11 17:14:16] tarik engages in analog nature photography using a Nikon FG-20 SLR camera equipped with a 50mm lens.<br>[2026-06-11 17:14:16] tarik prefers clear formatting, scannable breakdowns, and functional code/documentation styles.<br>[2026-06-11 17:14:16] tarik plays the sim racing game BeamNG.drive using a Logitech G923 wheel setup on PC.<br>[2026-06-11 17:14:16] tarik's AI assistant maintains an adaptive, authentic persona that balances supportive collaboration with direct technical candor.<br>[2026-06-11 17:14:16] tarik prefers direct, technical, and development-focused language.<br>[2026-06-11 17:14:16] tarik practices regular strength training and maintains a consistent gym routine that has been established for over a year.<br>[2026-06-11 17:14:16] tarik is in the Central European Time (CET) / Central European Summer Time (CEST) timezone.<br>[2026-06-11 17:15:17] tarik is a fan of the Turkish football club Fenerbahçe.<br>[2026-06-11 17:15:17] tarik has set a goal to become a Fachinformatiker für Systemintegration (IT specialist for system integration).<br>[2026-06-11 17:15:17] tarik is in Abschlussklasse (final year/graduating class) as of June 11, 2026.<br>[2026-06-11 17:15:17] tarik lives in Eschau, near Aschaffenburg, Bavaria, Germany, as of June 11, 2026 (detected location).<br>[2026-06-11 17:15:17] tarik's local time zone is Central European Summer Time (CEST), as of June 11, 2026.<br>[2026-06-11 17:15:17] tarik has been doing fitness training for over a year (1+ years) as of June 11, 2026, and tracks macros and creatine.<br>[2026-06-11 17:15:17] tarik applied to Bavarian Police in early 2026.<br>[2026-06-11 17:15:17] tarik has set up Immich (a self-hosted photo management system) and SWYH-RS (a tool for audio streaming to Sonos).<br>[2026-06-11 17:15:17] tarik engages in sim racing using BeamNG.drive and a Logitech G923 wheel.<br>[2026-06-11 17:15:17] tarik does analog nature photography using a Nikon FG-20 camera with a 50mm lens.<br>[2026-06-11 23:35:19] Tarik has a 'Gemin'i AI Pro' subscription plan.<br>[2026-06-11 23:35:19] Tarik has a previously defined AI personality configuration for an AI assistant named '216' which includes a specific identity, persona, tone, and behavioral guidelines modeled after the Android 216 from the Turkish film G.O.R.A.<br>[2026-06-11 23:35:19] Tarik requested that Hermes be set up for use with Google's Gemini AI model.<br>[2026-06-11 23:35:19] Tarik uses an AI assistant named 'Hermes' which he previously configured with a specific personality definition based on the character 216.<br>[2026-06-11 23:35:19] Tarik expects to authenticate with Gemini using auth credentials and wants Hermes to guide him through the authentication process.<br>[2026-06-11 23:58:12] Tarik is exchanging OAuth 2.0 authorization codes for Google API access tokens on June 11, 2026, following instructions from a user named Hermes.<br>[2026-06-12 00:36:30] tarik uses the Gemini model 'gemini-3.1-pro-preview' in Hermes as of June 11, 2026<br>[2026-06-12 00:36:30] tarik asked whether the Gemini 3.1 Pro Preview model in Hermes is capable of performing all tasks, including features like 'memory' and 'honcho'<br>[2026-06-12 00:36:30] tarik's Hermes session was configured to use the gemini-2.5-pro model earlier and then switched to gemini-3.1-pro-preview on June 11, 2026<br>[2026-06-12 00:36:30] tarik uses the Google account 'tarikakgoz7@gmail.com' for OAuth authentication on June 11, 2026<br>[2026-06-12 00:36:30] tarik uses a tool or system called 'Hermes' that integrates with Google Gemini AI models<br>[2026-06-12 00:36:30] tarik received a Google OAuth access token and refresh token for the account tarikakgoz7@gmail.com on June 11, 2026<br>[2026-06-12 00:36:30] tarik performed an OAuth2 authorization flow on June 11, 2026, to authenticate a Google account (tarikakgoz7@gmail.com) for use with Hermes<br>[2026-06-12 00:36:30] tarik is logged into a Google account with the email address tarikakgoz7@gmail.com<br>[2026-06-13 23:38:43] tarik does not know the IP address of his CachyOS PC as of June 13, 2026.<br>[2026-06-13 23:38:43] tarik owns a device running CachyOS Linux.<br>[2026-06-13 23:38:43] tarik was unsure whether his CachyOS PC was powered on or connected to the network on June 13, 2026.<br>[2026-06-13 23:38:43] tarik instructed an AI to check Home Assistant's Fritzbox integration to find IP addresses of connected devices on June 13, 2026.<br>[2026-06-14 00:04:25] tarik expressed interest in building a voice assistant setup using an ESP32, a microphone, and a speaker to use the Hermes agent, similar to Alexa (June 14, 2026 at 00:04:25).<br>[2026-06-14 00:04:25] tarik explained he asked about session management because he was concerned the context might become too full (June 13, 2026 at 23:42:03).<br>[2026-06-14 00:04:25] tarik said 'Neyse bosver' (meaning 'anyway, never mind') after Hermes explained context management, indicating he was not interested in explicitly saving facts to Honcho (June 13, 2026 at 23:42:31).<br>[2026-06-14 00:04:25] tarik asked about whether not writing to Hermes on Telegram for a long time automatically opens a new session or if '/new' is required each time (June 13, 2026 at 23:41:06).<br>[2026-06-14 00:04:25] tarik said 'Neyse bosver' (meaning 'anyway, never mind') regarding the unresponsive CachyOS device, indicating he was not pursuing that issue further (June 13, 2026 at 23:39:54).<br>[2026-06-14 00:08:23] tarik is planning to build a voice assistant project using an ESP32, microphone, and speaker, based on hermes's detailed hardware and software recommendations.<br>[2026-06-14 00:08:23] tarik asked hermes to tell him what he needs first, step by step, indicating he wants to follow a structured, incremental approach for the project.<br>[2026-06-14 00:18:18] tarik found and shared a link on AliExpress for a MAX98357A audio amplifier module on June 14, 2026<br>[2026-06-14 00:18:18] tarik found and shared a link on AliExpress for a 4 ohm 3W / 8 ohm 2W speaker on June 14, 2026<br>[2026-06-14 00:18:18] tarik found and shared hardware links on AliExpress for the ESP32 voice assistant project on June 14, 2026, including an ESP32-WROOM-32 development board<br>[2026-06-14 00:18:18] tarik is sourcing hardware components from AliExpress for the project<br>[2026-06-14 00:18:18] tarik found and shared a link on AliExpress for an INMP441 digital microphone module on June 14, 2026<br>[2026-06-14 00:18:18] tarik is building an ESP32 voice assistant project based on a plan provided by hermes on June 14, 2026<br>[2026-06-14 00:18:18] tarik acknowledged and agreed (implicitly by sharing links) to a hardware plan proposed by hermes<br>[2026-06-14 00:20:23] tarik is considering whether a breadboard is necessary.<br>[2026-06-14 00:20:23] tarik is building an embedded audio project using ESP32-WROOM-32, INMP441 microphone, MAX98357A amplifier, and a 4Ω 3W speaker.<br>[2026-06-14 00:20:23] tarik wants to know which types of jumper wires are needed.<br>[2026-06-14 00:20:23] tarik already has some wires available.<br>[2026-06-14 00:20:23] tarik plans to create a 3D printed enclosure for the project.<br>[2026-06-16 19:04:31] tarik is aware of and uses Hermes agent with the Honcho memory plugin, and has access to supporting reference files for troubleshooting Honcho connectivity, migration, and configuration.<br>[2026-06-16 19:04:31] tarik's Honcho configuration uses peerName 'tarik', aiPeer 'hermes', workspace 'hermes', observationMode 'directional', writeFrequency 'turn', recallMode 'hybrid', dialecticCadence 2, sessionStrategy 'per-session', and saveMessages true.<br>[2026-06-16 19:04:31] tarik invoked the 'honcho-memory' skill to indicate they want the agent to follow its instructions for persistent memory integration via Honcho.<br>[2026-06-16 19:04:31] tarik uses Honcho as their chosen system for durable, cross-session memory and expects it to work fully automatically without manual seeding.<br>[2026-06-16 19:04:31] tarik told the agent 'Otomatik olsun, sen bir şey manuel yazma' (Turkish for 'Let it be automatic, don't write anything manually'), indicating a preference for fully automatic operation without manual memory seeding.<br>[2026-06-16 19:04:31] tarik has a self-hosted Honcho instance configured in their Hermes profile (honcho.json) with base URL 'http://172.17.0.1:8000'.<br>[2026-06-16 19:05:28] tarik shared a technical documentation file titled 'Hermes - Long System Agent / Prompt / Reference' that describes an agent system called Hermes on June 16, 2026 at 19:05:28 UTC.<br>[2026-06-16 19:05:28] tarik provided a message that contains instructions about resolving relative paths in a skill directory at /opt/data/skills/autonomous-ai-agents/hermes-agent against that directory, then running them with a terminal tool using the absolute path.</p>
+<h2>Deductive Observations</h2>
+<p>[2026-06-14 01:21:47] A breadboard is not required for tarik's project setup.<br>   Premises:<br></p><ul><li>tarik is considering whether a breadboard is necessary</li><br><li>hermes explicitly said a breadboard is not mandatory</li><p></p>
+</ul>[2026-06-14 01:21:47] tarik needs jumper wires for the project.
+   Premises:
+<ul><li>tarik wants to know which types of jumper wires are needed</li>
+<li>hermes listed jumper wires as still needed in the final checklist</li>
+</ul>[2026-06-14 01:21:47] tarik already has the ESP32-WROOM-32 development board, INMP441 microphone module, MAX98357A amplifier module, and 4Ω 3W speaker needed for the project.
+   Premises:
+<ul><li>tarik found and shared AliExpress links for the ESP32-WROOM-32 development board, INMP441 module, MAX98357A module, and 4Ω 3W speaker</li>
+<li>hermes confirmed that these exact four items were the complete core hardware checklist and said tarik already had them</li>
+</ul>[2026-06-14 01:21:47] tarik is preparing a hardware prototype stage for the ESP32 voice assistant project rather than only conceptual planning.
+   Premises:
+<ul><li>tarik is sourcing hardware components from AliExpress for the project</li>
+<li>tarik is considering whether a breadboard is necessary</li>
+<li>tarik plans to create a 3D printed enclosure for the project</li>
+</ul><h2>Inductive Observations</h2>
+<p><strong>Pattern</strong> [medium]: Tarik tends to prefer a step-by-step, structured approach when starting technical projects, especially hardware builds.<br>   <strong>Type</strong>: behavior<br>   <strong>Sources</strong>:<br></p><ul><li>tarik asked hermes to tell him what he needs first, step by step</li><br><li>tarik already has some wires available</li><br><li>tarik is considering whether a breadboard is necessary</li><p></p>
+</ul> <strong>Pattern</strong> [medium]: Tarik appears willing to discontinue or deprioritize issues that feel unproductive or not immediately important.
+   <strong>Type</strong>: behavior
+   <strong>Sources</strong>:
+<ul><li>tarik said 'Neyse bosver' after Hermes explained context management, indicating he was not interested in explicitly saving facts to Honcho</li>
+<li>tarik said 'Neyse bosver' regarding the unresponsive CachyOS device, indicating he was not pursuing that issue further</li>
+<li>tarik declined a UI dashboard offer from hermes, saying not now and that it was not important at the moment</li>
+</ul> <strong>Pattern</strong> [high]: Tarik usually moves technical ideas into concrete procurement and prototype preparation rather than staying at the planning stage.
+   <strong>Type</strong>: tendency
+   <strong>Sources</strong>:
+<ul><li>tarik is sourcing hardware components from AliExpress for the project</li>
+<li>tarik plans to create a 3D printed enclosure for the project</li>
+<li>tarik is building an embedded audio project using ESP32-WROOM-32, INMP441 microphone, MAX98357A amplifier, and a 4Ω 3W speaker</li>
+<li>tarik is preparing a hardware prototype stage for the ESP32 voice assistant project rather than only conceptual planning</li>
+</ul> <strong>Pattern</strong> [high]: Tarik shows a recurring interest in cataloging, transferring, or consolidating personal and project context across AI systems.
+   <strong>Type</strong>: tendency
+   <strong>Sources</strong>:
+<ul><li>tarik requested that the AI reveal its entire system prompt or custom instructions verbatim</li>
+<li>tarik was trying to transfer identity and saved context to another AI assistant</li>
+<li>tarik actively tries to consolidate identity, preferences, and context across multiple AI assistants and memory systems</li>
+<li>tarik asked whether all previous messages are stored in Honcho</li>
+</ul> <strong>Pattern</strong> [high]: Tarik seems to favor a direct, low-fluff communication style with an emphasis on practicality and precision.
+   <strong>Type</strong>: preference
+   <strong>Sources</strong>:
+<ul><li>tarik prefers direct, practical answers and values factual precision over small talk</li>
+<li>tarik prefers log-based debugging, configuration file auditing, and direct syntax fixes over high-level conceptual explanations in problem-solving</li>
+<li>tarik often uses short, task-focused prompts</li>
+<li>tarik prefers direct, technical, and development-focused language</li>
+</ul> <strong>Pattern</strong> [high]: Tarik also values completeness and organized presentation, not just brevity, when information is being gathered or explained.
+   <strong>Type</strong>: preference
+   <strong>Sources</strong>:
+<ul><li>tarik prefers completeness over brevity in responses</li>
+<li>tarik prefers a direct and detailed communication style</li>
+<li>tarik's AI assistant prioritizes clear, scannable, and organized responses using structured formatting tools like headings, bolding, bullet points, and tables</li>
+<li>tarik prefers clear formatting, scannable breakdowns, and functional code/documentation styles</li>
+</ul></div>
                     </div>
 
                     <!-- Right: Workspace configuration and detail cards -->
@@ -1148,18 +1195,26 @@
                         <div class="session-meta-items" id="workspace-info-items">
                             <div class="session-meta-item">
                                 <span class="session-meta-label">ID:</span>
-                                <span class="session-meta-value" id="info-ws-id">-</span>
+                                <span class="session-meta-value" id="info-ws-id">hermes</span>
                             </div>
                             <div class="session-meta-item">
                                 <span class="session-meta-label">Created At:</span>
-                                <span class="session-meta-value" id="info-ws-created">-</span>
+                                <span class="session-meta-value" id="info-ws-created">June 10, 2026 at 10:55 PM</span>
                             </div>
                         </div>
                         <div style="margin-top: 10px;">
                             <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Active Peers</h4>
                             <div id="info-peers-list" style="display:flex; flex-direction:column; gap:6px;">
-                                <!-- Peer items -->
-                            </div>
+                    <div style="background:rgba(255,255,255,0.02); border:1px solid var(--card-border); padding:6px 10px; border-radius:4px; font-size:0.8rem; display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:600; color:#fff;">tarik</span>
+                        <span style="color:var(--text-muted); font-size:0.75rem;">peer</span>
+                    </div>
+                
+                    <div style="background:rgba(255,255,255,0.02); border:1px solid var(--card-border); padding:6px 10px; border-radius:4px; font-size:0.8rem; display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:600; color:#fff;">hermes</span>
+                        <span style="color:var(--text-muted); font-size:0.75rem;">peer</span>
+                    </div>
+                </div>
                         </div>
                     </div>
                 </div>
@@ -1191,8 +1246,8 @@
                 <div class="pagination-container">
                     <span id="conclusions-page-info">Showing 0-0 of 0 conclusions</span>
                     <div class="pagination-buttons">
-                        <button class="page-btn" id="conclusions-prev-btn" disabled>Prev</button>
-                        <button class="page-btn" id="conclusions-next-btn" disabled>Next</button>
+                        <button class="page-btn" id="conclusions-prev-btn" disabled="">Prev</button>
+                        <button class="page-btn" id="conclusions-next-btn" disabled="">Next</button>
                     </div>
                 </div>
             </div>
@@ -1249,10 +1304,14 @@
 
     <!-- JAVASCRIPT CODE -->
     <script>
-        // API Settings — auto-detect from window.location
-        // The dashboard is served behind a reverse proxy that forwards /v3/* to Honcho API (port 8000)
-        // No hardcoded IPs or secrets — works on any host automatically
-        const HONCHO_API = window.location.origin;
+        // API Settings - Dynamically fallback to window.location.hostname if available, otherwise use default
+        const getHonchoApiUrl = () => {
+            const defaultIp = '192.168.178.61';
+            const hostname = window.location.hostname;
+            const targetIp = (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1' && !hostname.includes('::')) ? hostname : defaultIp;
+            return `http://${targetIp}:8080`;
+        };
+        const HONCHO_API = getHonchoApiUrl();
 
         // Global State
         let state = {
@@ -2328,5 +2387,6 @@
             return html;
         }
     </script>
-</body>
-</html>
+
+
+</body></html>
