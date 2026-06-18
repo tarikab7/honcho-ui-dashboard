@@ -2105,7 +2105,7 @@
                                     <span class="timeline-item-time">${formatTimeOnly(obs.createdAt)}</span>
                                 </div>
                                 <div class="timeline-item-content">
-                                    ${obs.content}
+                                    ${escapeHtml(obs.content)}
                                 </div>
                             </div>
                         </div>
