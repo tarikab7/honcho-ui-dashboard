@@ -1545,7 +1545,7 @@
 
                 // Populate select option dropdown
                 DOM.workspaceSelect.innerHTML = state.workspaces.map(ws => 
-                    `<option value="${ws.id}">${ws.id}</option>`
+                    `<option value="${escapeHtml(ws.id)}">${escapeHtml(ws.id)}</option>`
                 ).join('');
                 DOM.workspaceSelect.disabled = false;
 
