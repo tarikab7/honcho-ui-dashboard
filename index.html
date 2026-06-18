@@ -1304,12 +1304,13 @@
 
     <!-- JAVASCRIPT CODE -->
     <script>
-        // API Settings - Dynamically fallback to window.location.hostname if available, otherwise use default
+        // API Settings - Allow configuration via window.HONCHO_API_URL or fallback to hostname:8080
         const getHonchoApiUrl = () => {
-            const defaultIp = '192.168.178.61';
-            const hostname = window.location.hostname;
-            const targetIp = (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1' && !hostname.includes('::')) ? hostname : defaultIp;
-            return `http://${targetIp}:8080`;
+            if (window.HONCHO_API_URL) {
+                return window.HONCHO_API_URL;
+            }
+            const hostname = window.location.hostname || 'localhost';
+            return `http://${hostname}:8080`;
         };
         const HONCHO_API = getHonchoApiUrl();
 
