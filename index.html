@@ -2234,7 +2234,8 @@
 
         // Escape HTML tags to prevent injections in chat log
         function escapeHtml(unsafe) {
-            return unsafe
+            if (unsafe === null || unsafe === undefined) return "";
+            return String(unsafe)
                  .replace(/&/g, "&amp;")
                  .replace(/</g, "&lt;")
                  .replace(/>/g, "&gt;")
