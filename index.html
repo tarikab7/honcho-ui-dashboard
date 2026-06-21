@@ -1545,7 +1545,7 @@
 
                 // Populate select option dropdown
                 DOM.workspaceSelect.innerHTML = state.workspaces.map(ws => 
-                    `<option value="${ws.id}">${ws.id}</option>`
+                    `<option value="${escapeHtml(ws.id)}">${escapeHtml(ws.id)}</option>`
                 ).join('');
                 DOM.workspaceSelect.disabled = false;
 
@@ -1632,7 +1632,7 @@
                 // Render peers list in sidebar info block
                 DOM.infoPeersList.innerHTML = state.peers.map(p => `
                     <div style="background:rgba(255,255,255,0.02); border:1px solid var(--card-border); padding:6px 10px; border-radius:4px; font-size:0.8rem; display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-weight:600; color:#fff;">${p.id}</span>
+                        <span style="font-weight:600; color:#fff;">${escapeHtml(p.id)}</span>
                         <span style="color:var(--text-muted); font-size:0.75rem;">peer</span>
                     </div>
                 `).join('');
@@ -1645,7 +1645,7 @@
                     // Render peer selector tabs on Overview
                     DOM.peerSelectorTabs.style.display = 'flex';
                     DOM.peerSelectorTabs.innerHTML = state.peers.map(p => `
-                        <button class="peer-tab ${p.id === state.selectedPeerId ? 'active' : ''}" data-peer-id="${p.id}">${p.id}</button>
+                        <button class="peer-tab ${p.id === state.selectedPeerId ? 'active' : ''}" data-peer-id="${escapeHtml(p.id)}">${escapeHtml(p.id)}</button>
                     `).join('');
                     
                     // Bind peer selectors
@@ -1929,13 +1929,13 @@
                     <div class="conclusion-card ${isLongText ? 'expandable' : ''}" data-full-text="${encodeURIComponent(c.content)}" data-truncated-text="${encodeURIComponent(truncatedContent)}" data-expanded="false">
                         <div class="conclusion-meta">
                             <div class="conclusion-tags">
-                                <span class="tag blue">Observer: ${c.observer_id}</span>
-                                <span class="tag">Observed: ${c.observed_id}</span>
-                                ${c.session_id ? `<span class="tag blue">Session: ${c.session_id.substring(0, 16)}${c.session_id.length > 16 ? '...' : ''}</span>` : ''}
+                                <span class="tag blue">Observer: ${escapeHtml(c.observer_id)}</span>
+                                <span class="tag">Observed: ${escapeHtml(c.observed_id)}</span>
+                                ${c.session_id ? `<span class="tag blue">Session: ${escapeHtml(c.session_id.substring(0, 16))}${c.session_id.length > 16 ? '...' : ''}</span>` : ''}
                             </div>
                             <span class="conclusion-date">${formatDateTime(c.created_at)}</span>
                         </div>
-                        <div class="conclusion-content">${truncatedContent}</div>
+                        <div class="conclusion-content">${escapeHtml(truncatedContent)}</div>
                         ${isLongText ? `<div class="conclusion-expand-hint">Click to expand</div>` : ''}
                     </div>
                 `;
@@ -2014,9 +2014,9 @@
                 }
 
                 return `
-                    <div class="session-card" data-session-id="${s.id}">
+                    <div class="session-card" data-session-id="${escapeHtml(s.id)}">
                         <div class="session-header">
-                            <span class="session-id" title="${s.id}">${shortenedId}</span>
+                            <span class="session-id" title="${escapeHtml(s.id)}">${escapeHtml(shortenedId)}</span>
                             <span class="session-source-badge ${sourceClass}">${sourceText}</span>
                         </div>
                         <div class="session-meta-items">
@@ -2029,8 +2029,8 @@
                                 <span class="session-meta-value" style="color:#fff; font-weight:600;">${s.messageCount}</span>
                             </div>
                         </div>
-                        <div class="session-summary-preview" title="${summaryPreview.replace(/"/g, '&quot;')}">
-                            ${summaryPreview}
+                        <div class="session-summary-preview" title="${escapeHtml(summaryPreview)}">
+                            ${escapeHtml(summaryPreview)}
                         </div>
                     </div>
                 `;
@@ -2101,11 +2101,11 @@
                         <div class="timeline-item">
                             <div class="timeline-item-card">
                                 <div class="timeline-item-header">
-                                    <span class="timeline-item-session" data-session-id="${obs.sessionId}" title="View session details">Session: ${shortSessionId}</span>
+                                    <span class="timeline-item-session" data-session-id="${escapeHtml(obs.sessionId)}" title="View session details">Session: ${escapeHtml(shortSessionId)}</span>
                                     <span class="timeline-item-time">${formatTimeOnly(obs.createdAt)}</span>
                                 </div>
                                 <div class="timeline-item-content">
-                                    ${obs.content}
+                                    ${escapeHtml(obs.content)}
                                 </div>
                             </div>
                         </div>
@@ -2151,11 +2151,11 @@
                 DOM.modalSummaryPanel.style.display = 'flex';
                 let summaryContent = '';
                 if (session.summaries.short_summary && session.summaries.short_summary.content) {
-                    summaryContent += `<strong>Short Summary:</strong><br>${session.summaries.short_summary.content}`;
+                    summaryContent += `<strong>Short Summary:</strong><br>${escapeHtml(session.summaries.short_summary.content)}`;
                 }
                 if (session.summaries.long_summary && session.summaries.long_summary.content) {
                     if (summaryContent) summaryContent += `<br><br>`;
-                    summaryContent += `<strong>Long Summary:</strong><br>${session.summaries.long_summary.content}`;
+                    summaryContent += `<strong>Long Summary:</strong><br>${escapeHtml(session.summaries.long_summary.content)}`;
                 }
                 DOM.modalSummaryText.innerHTML = summaryContent || 'No summary text.';
             } else {
