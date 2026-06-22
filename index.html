@@ -1769,9 +1769,15 @@
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({})
-                        }).then(r => r.json());
+                        }).then(r => r.json()).catch(e => {
+                            console.warn(`Failed to fetch messages for session ${session.id}:`, e);
+                            return { total: 0 };
+                        });
 
-                        const summaryPromise = fetch(`${HONCHO_API}/v3/workspaces/${workspaceId}/sessions/${session.id}/summaries`).then(r => r.json());
+                        const summaryPromise = fetch(`${HONCHO_API}/v3/workspaces/${workspaceId}/sessions/${session.id}/summaries`).then(r => r.json()).catch(e => {
+                            console.warn(`Failed to fetch summaries for session ${session.id}:`, e);
+                            return { id: session.id, short_summary: null, long_summary: null };
+                        });
 
                         const [msgData, summaryData] = await Promise.all([msgPromise, summaryPromise]);
 
