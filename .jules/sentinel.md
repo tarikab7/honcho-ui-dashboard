@@ -1,4 +1,4 @@
-## 2026-06-21 - Fix XSS Vulnerabilities in Templates
-**Vulnerability:** XSS vulnerabilities in dynamically generated HTML templates when rendering external API data into the UI.
-**Learning:** Using template literals directly with `innerHTML` leaves data vulnerable if not escaped.
-**Prevention:** Make sure to sanitize external inputs using an escape function (e.g. `escapeHtml`) before interpolating them into HTML templates when rendering via `innerHTML`.
+## 2024-10-24 - Hardcoded Internal IP Leak and Custom Markdown Parser Stored XSS
+**Vulnerability:** A hardcoded internal IP address (`192.168.178.61`) was found in the fallback logic of `getHonchoApiUrl`. Additionally, the custom `parseMarkdown` function was vulnerable to Stored XSS because it applied regex replacements to generate HTML without first escaping the input.
+**Learning:** Hardcoding IPs in static files not only violates security policies by exposing internal network topology but also makes the application inflexible. Furthermore, implementing custom markdown parsers using regex is inherently risky. If HTML escaping is not explicitly performed *before* the markdown transformations, malicious XSS payloads embedded in the markdown will be executed when the HTML is rendered.
+**Prevention:** Always use environment variables or dynamic location detection (e.g., `window.location.hostname`) for API endpoints instead of hardcoded IPs. When rendering user-supplied or AI-generated content to HTML, use established, secure markdown libraries if possible. If a custom parser is required, strictly enforce HTML sanitization (e.g., using `escapeHtml`) on the raw input before any structural HTML transformations occur.
