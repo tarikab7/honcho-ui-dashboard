@@ -1,3 +1,3 @@
-## 2024-05-18 - Parallelizing metadata fetches and avoiding duplicate network calls
-**Learning:** Found sequential independent network requests blocking the main UI thread when loading workspace context. Also discovered the same API query (`conclusions/list?size=1`) was redundantly fired twice in the same block to calculate different statistics.
-**Action:** Use `Promise.all` for independent parallel fetch operations on initialization, and always reuse fetched data payloads to calculate multiple statistics rather than repeating identical requests.
+## 2026-06-19 - Sequential API Fetches in loadWorkspaceMeta
+**Learning:** The loadWorkspaceMeta function was performing three sequential API fetches and one duplicate fetch for conclusions/list, blocking the UI update by adding unnecessary latency waterfalls.
+**Action:** Replaced the sequential fetches with a single Promise.all concurrent execution and reused the initial conclusions payload instead of making a duplicate HTTP request.
