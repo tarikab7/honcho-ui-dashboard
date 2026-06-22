@@ -19,8 +19,9 @@
   },
   "homepage": "https://github.com/tarikab7/honcho-ui-dashboard#readme",
   "devDependencies": {
-    "jest": "^30.4.2",
-    "jest-environment-jsdom": "^30.4.1",
-    "jsdom": "^26.1.0"
+    "jest": "^30.4.2"
+  },
+  "dependencies": {
+    "jsdom": "^22.1.0"
   }
 }
