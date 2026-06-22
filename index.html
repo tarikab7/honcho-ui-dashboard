@@ -1311,7 +1311,7 @@
 
     <!-- JAVASCRIPT CODE -->
     <script>
-        // API Settings - Dynamically fallback to window.location.hostname if available, otherwise use default
+        // API Settings - Allow configuration via window.HONCHO_API_URL or fallback to hostname:8080
         const getHonchoApiUrl = () => {
             if (window.HONCHO_API_URL) return window.HONCHO_API_URL;
             const hostname = window.location.hostname;
