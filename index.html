@@ -154,6 +154,13 @@
             background-color: var(--card-bg);
         }
 
+        /* Keyboard Accessibility Focus State */
+        *:focus-visible {
+            outline: 2px solid var(--accent-color);
+            outline-offset: 2px;
+            border-radius: 2px;
+        }
+
         .nav-item.active {
             color: #fff;
             background-color: #1f2937;
