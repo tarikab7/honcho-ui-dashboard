@@ -1877,7 +1877,13 @@
         // Fetch message count and summaries in parallel for sessions
         async function fetchSessionDetails(workspaceId, rawSessions) {
             try {
-                return await Promise.all(rawSessions.map(async (session) => {
+                // To prevent browser connection limit exhaustion (typically 6 per origin)
+                // and reduce network queue contention, we process the sessions with limited concurrency.
+                const CONCURRENCY_LIMIT = 10;
+                const results = new Array(rawSessions.length);
+                let currentIndex = 0;
+
+                const tasks = rawSessions.map((session, index) => async () => {
                     try {
                         const msgPromise = fetch(`${HONCHO_API}/v3/workspaces/${workspaceId}/sessions/${session.id}/messages/list?size=1`, {
                             method: 'POST',
@@ -1895,20 +1901,32 @@
 
                         const [msgData, summaryData] = await Promise.all([msgPromise, summaryPromise]);
 
-                        return {
+                        results[index] = {
                             ...session,
                             messageCount: msgData.total || 0,
                             summaries: summaryData
                         };
                     } catch (e) {
                         console.error(`Failed to fetch details for session ${session.id}:`, e);
-                        return {
+                        results[index] = {
                             ...session,
                             messageCount: 0,
                             summaries: { id: session.id, short_summary: null, long_summary: null }
                         };
                     }
-                }));
+                });
+
+                async function worker() {
+                    while (currentIndex < tasks.length) {
+                        const taskIndex = currentIndex++;
+                        await tasks[taskIndex]();
+                    }
+                }
+
+                const workers = Array(Math.min(CONCURRENCY_LIMIT, tasks.length)).fill(null).map(() => worker());
+                await Promise.all(workers);
+
+                return results;
             } catch (e) {
                 console.error("Failed in fetchSessionDetails:", e);
                 return rawSessions.map(s => ({
