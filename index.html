@@ -1929,13 +1929,13 @@
                     <div class="conclusion-card ${isLongText ? 'expandable' : ''}" data-full-text="${encodeURIComponent(c.content)}" data-truncated-text="${encodeURIComponent(truncatedContent)}" data-expanded="false">
                         <div class="conclusion-meta">
                             <div class="conclusion-tags">
-                                <span class="tag blue">Observer: ${c.observer_id}</span>
-                                <span class="tag">Observed: ${c.observed_id}</span>
-                                ${c.session_id ? `<span class="tag blue">Session: ${c.session_id.substring(0, 16)}${c.session_id.length > 16 ? '...' : ''}</span>` : ''}
+                                <span class="tag blue">Observer: ${escapeHtml(c.observer_id)}</span>
+                                <span class="tag">Observed: ${escapeHtml(c.observed_id)}</span>
+                                ${c.session_id ? `<span class="tag blue">Session: ${escapeHtml(c.session_id.substring(0, 16))}${c.session_id.length > 16 ? '...' : ''}</span>` : ''}
                             </div>
                             <span class="conclusion-date">${formatDateTime(c.created_at)}</span>
                         </div>
-                        <div class="conclusion-content">${truncatedContent}</div>
+                        <div class="conclusion-content">${escapeHtml(truncatedContent)}</div>
                         ${isLongText ? `<div class="conclusion-expand-hint">Click to expand</div>` : ''}
                     </div>
                 `;
