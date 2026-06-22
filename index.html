@@ -2029,8 +2029,8 @@
                                 <span class="session-meta-value" style="color:#fff; font-weight:600;">${s.messageCount}</span>
                             </div>
                         </div>
-                        <div class="session-summary-preview" title="${summaryPreview.replace(/"/g, '&quot;')}">
-                            ${summaryPreview}
+                        <div class="session-summary-preview" title="${escapeHtml(summaryPreview)}">
+                            ${escapeHtml(summaryPreview)}
                         </div>
                     </div>
                 `;
