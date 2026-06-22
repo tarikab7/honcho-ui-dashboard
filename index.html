@@ -1319,6 +1319,9 @@
             selectedWorkspaceId: '',
             selectedTab: 'overview',
             
+            // Performance: cache already loaded tabs
+            loadedTabs: new Set(),
+
             // Statistics
             stats: {
                 conclusions: 0,
@@ -1572,6 +1575,7 @@
             state.selectedPeerId = '';
             state.peerContextCache = {};
             state.conclusionsPage = 1;
+            state.loadedTabs.clear(); // ⚡ Bolt: Clear tab cache on workspace change
 
             // Load core workspace stats & meta
             await loadWorkspaceMeta();
@@ -1602,6 +1606,7 @@
             DOM.refreshBtn.innerText = 'Refreshing...';
             
             await checkApiHealth();
+            state.loadedTabs.clear(); // ⚡ Bolt: Clear tab cache on manual refresh
             await loadWorkspaceMeta();
             await loadTabData(state.selectedTab, true);
             
@@ -1779,6 +1784,11 @@
         function loadTabData(tabName, forceRefresh = false) {
             if (!state.selectedWorkspaceId) return;
 
+            // ⚡ Bolt: Cache tab rendering to prevent redundant network requests and DOM thrashing
+            if (!forceRefresh && state.loadedTabs.has(tabName)) {
+                return;
+            }
+
             switch (tabName) {
                 case 'overview':
                     loadOverviewTab();
@@ -1792,6 +1802,11 @@
                 case 'observations':
                     loadObservationsTab();
                     break;
+            }
+
+            // ⚡ Bolt: Mark tab as loaded only if not waiting on session details (sessions/observations depend on this)
+            if (!state.sessionsLoading || (tabName !== 'sessions' && tabName !== 'observations')) {
+                state.loadedTabs.add(tabName);
             }
         }
 
