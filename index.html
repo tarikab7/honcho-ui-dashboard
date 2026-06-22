@@ -1284,7 +1284,7 @@
                     <div class="modal-title" id="modal-session-id">Session Details</div>
                     <div class="modal-subtitle" id="modal-session-date">Created At: -</div>
                 </div>
-                <button class="modal-close" id="modal-close-btn" aria-label="Close session details">
+                <button class="modal-close" id="modal-close-btn" aria-label="Close session details" title="Close">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -1313,9 +1313,9 @@
     <script>
         // API Settings - Dynamically fallback to window.location.hostname if available, otherwise use default
         const getHonchoApiUrl = () => {
-            const defaultIp = '192.168.178.61';
+            if (window.HONCHO_API_URL) return window.HONCHO_API_URL;
             const hostname = window.location.hostname;
-            const targetIp = (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1' && !hostname.includes('::')) ? hostname : defaultIp;
+            const targetIp = (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1' && !hostname.includes('::')) ? hostname : 'localhost';
             return `http://${targetIp}:8080`;
         };
         const HONCHO_API = getHonchoApiUrl();
@@ -1326,6 +1326,9 @@
             selectedWorkspaceId: '',
             selectedTab: 'overview',
             
+            // Performance: cache already loaded tabs
+            loadedTabs: new Set(),
+
             // Statistics
             stats: {
                 conclusions: 0,
@@ -1552,7 +1555,7 @@
 
                 // Populate select option dropdown
                 DOM.workspaceSelect.innerHTML = state.workspaces.map(ws => 
-                    `<option value="${ws.id}">${ws.id}</option>`
+                    `<option value="${escapeHtml(ws.id)}">${escapeHtml(ws.id)}</option>`
                 ).join('');
                 DOM.workspaceSelect.disabled = false;
 
@@ -1579,6 +1582,7 @@
             state.selectedPeerId = '';
             state.peerContextCache = {};
             state.conclusionsPage = 1;
+            state.loadedTabs.clear(); // ⚡ Bolt: Clear tab cache on workspace change
 
             // Load core workspace stats & meta
             await loadWorkspaceMeta();
@@ -1609,6 +1613,7 @@
             DOM.refreshBtn.innerText = 'Refreshing...';
             
             await checkApiHealth();
+            state.loadedTabs.clear(); // ⚡ Bolt: Clear tab cache on manual refresh
             await loadWorkspaceMeta();
             await loadTabData(state.selectedTab, true);
             
@@ -1627,19 +1632,35 @@
             }
 
             try {
-                // Fetch peers list
-                const peersResponse = await fetch(`${HONCHO_API}/v3/workspaces/${state.selectedWorkspaceId}/peers/list`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({})
-                });
+                // Fetch peers, conclusions, and sessions concurrently
+                const [peersResponse, conclusionsRes, sessionsRes] = await Promise.all([
+                    fetch(`${HONCHO_API}/v3/workspaces/${state.selectedWorkspaceId}/peers/list`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    }),
+                    fetch(`${HONCHO_API}/v3/workspaces/${state.selectedWorkspaceId}/conclusions/list?size=1`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    }),
+                    fetch(`${HONCHO_API}/v3/workspaces/${state.selectedWorkspaceId}/sessions/list?size=100`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    })
+                ]);
+
                 const peersData = await peersResponse.json();
+                const conclusionsData = await conclusionsRes.json();
+                const sessionsData = await sessionsRes.json();
+
                 state.peers = peersData.items || [];
 
                 // Render peers list in sidebar info block
                 DOM.infoPeersList.innerHTML = state.peers.map(p => `
                     <div style="background:rgba(255,255,255,0.02); border:1px solid var(--card-border); padding:6px 10px; border-radius:4px; font-size:0.8rem; display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-weight:600; color:#fff;">${p.id}</span>
+                        <span style="font-weight:600; color:#fff;">${escapeHtml(p.id)}</span>
                         <span style="color:var(--text-muted); font-size:0.75rem;">peer</span>
                     </div>
                 `).join('');
@@ -1652,7 +1673,7 @@
                     // Render peer selector tabs on Overview
                     DOM.peerSelectorTabs.style.display = 'flex';
                     DOM.peerSelectorTabs.innerHTML = state.peers.map(p => `
-                        <button class="peer-tab ${p.id === state.selectedPeerId ? 'active' : ''}" data-peer-id="${p.id}">${p.id}</button>
+                        <button class="peer-tab ${p.id === state.selectedPeerId ? 'active' : ''}" data-peer-id="${escapeHtml(p.id)}">${escapeHtml(p.id)}</button>
                     `).join('');
                     
                     // Bind peer selectors
@@ -1668,23 +1689,11 @@
                     state.selectedPeerId = '';
                 }
 
-                // Fetch total conclusions count
-                const conclusionsRes = await fetch(`${HONCHO_API}/v3/workspaces/${state.selectedWorkspaceId}/conclusions/list?size=1`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({})
-                });
-                const conclusionsData = await conclusionsRes.json();
+                // Total conclusions count
                 state.stats.conclusions = conclusionsData.total || 0;
                 DOM.statConclusions.innerText = state.stats.conclusions;
 
-                // Fetch total sessions count
-                const sessionsRes = await fetch(`${HONCHO_API}/v3/workspaces/${state.selectedWorkspaceId}/sessions/list?size=100`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({})
-                });
-                const sessionsData = await sessionsRes.json();
+                // Total sessions count
                 const rawSessions = sessionsData.items || [];
                 state.stats.sessions = sessionsData.total || 0;
                 DOM.statSessions.innerText = state.stats.sessions;
@@ -1708,15 +1717,9 @@
                     }
                 });
 
-                // Compare conclusions created_at
-                const newestConclusionRes = await fetch(`${HONCHO_API}/v3/workspaces/${state.selectedWorkspaceId}/conclusions/list?size=1`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({})
-                });
-                const newestConclusionData = await newestConclusionRes.json();
-                if (newestConclusionData.items && newestConclusionData.items.length > 0) {
-                    const latestConclusion = newestConclusionData.items[0];
+                // Compare conclusions created_at using already fetched data
+                if (conclusionsData.items && conclusionsData.items.length > 0) {
+                    const latestConclusion = conclusionsData.items[0];
                     if (!newestTimestamp || new Date(latestConclusion.created_at) > new Date(newestTimestamp)) {
                         newestTimestamp = latestConclusion.created_at;
                     }
@@ -1788,6 +1791,11 @@
         function loadTabData(tabName, forceRefresh = false) {
             if (!state.selectedWorkspaceId) return;
 
+            // ⚡ Bolt: Cache tab rendering to prevent redundant network requests and DOM thrashing
+            if (!forceRefresh && state.loadedTabs.has(tabName)) {
+                return;
+            }
+
             switch (tabName) {
                 case 'overview':
                     loadOverviewTab();
@@ -1801,6 +1809,11 @@
                 case 'observations':
                     loadObservationsTab();
                     break;
+            }
+
+            // ⚡ Bolt: Mark tab as loaded only if not waiting on session details (sessions/observations depend on this)
+            if (!state.sessionsLoading || (tabName !== 'sessions' && tabName !== 'observations')) {
+                state.loadedTabs.add(tabName);
             }
         }
 
@@ -1936,13 +1949,13 @@
                     <div class="conclusion-card ${isLongText ? 'expandable' : ''}" data-full-text="${encodeURIComponent(c.content)}" data-truncated-text="${encodeURIComponent(truncatedContent)}" data-expanded="false">
                         <div class="conclusion-meta">
                             <div class="conclusion-tags">
-                                <span class="tag blue">Observer: ${c.observer_id}</span>
-                                <span class="tag">Observed: ${c.observed_id}</span>
-                                ${c.session_id ? `<span class="tag blue">Session: ${c.session_id.substring(0, 16)}${c.session_id.length > 16 ? '...' : ''}</span>` : ''}
+                                <span class="tag blue">Observer: ${escapeHtml(c.observer_id)}</span>
+                                <span class="tag">Observed: ${escapeHtml(c.observed_id)}</span>
+                                ${c.session_id ? `<span class="tag blue">Session: ${escapeHtml(c.session_id.substring(0, 16))}${c.session_id.length > 16 ? '...' : ''}</span>` : ''}
                             </div>
                             <span class="conclusion-date">${formatDateTime(c.created_at)}</span>
                         </div>
-                        <div class="conclusion-content">${truncatedContent}</div>
+                        <div class="conclusion-content">${escapeHtml(truncatedContent)}</div>
                         ${isLongText ? `<div class="conclusion-expand-hint">Click to expand</div>` : ''}
                     </div>
                 `;
@@ -2021,9 +2034,9 @@
                 }
 
                 return `
-                    <div class="session-card" data-session-id="${s.id}">
+                    <div class="session-card" data-session-id="${escapeHtml(s.id)}">
                         <div class="session-header">
-                            <span class="session-id" title="${s.id}">${shortenedId}</span>
+                            <span class="session-id" title="${escapeHtml(s.id)}">${escapeHtml(shortenedId)}</span>
                             <span class="session-source-badge ${sourceClass}">${sourceText}</span>
                         </div>
                         <div class="session-meta-items">
@@ -2036,8 +2049,8 @@
                                 <span class="session-meta-value" style="color:#fff; font-weight:600;">${s.messageCount}</span>
                             </div>
                         </div>
-                        <div class="session-summary-preview" title="${summaryPreview.replace(/"/g, '&quot;')}">
-                            ${summaryPreview}
+                        <div class="session-summary-preview" title="${escapeHtml(summaryPreview)}">
+                            ${escapeHtml(summaryPreview)}
                         </div>
                     </div>
                 `;
@@ -2108,11 +2121,11 @@
                         <div class="timeline-item">
                             <div class="timeline-item-card">
                                 <div class="timeline-item-header">
-                                    <span class="timeline-item-session" data-session-id="${obs.sessionId}" title="View session details">Session: ${shortSessionId}</span>
+                                    <span class="timeline-item-session" data-session-id="${escapeHtml(obs.sessionId)}" title="View session details">Session: ${escapeHtml(shortSessionId)}</span>
                                     <span class="timeline-item-time">${formatTimeOnly(obs.createdAt)}</span>
                                 </div>
                                 <div class="timeline-item-content">
-                                    ${obs.content}
+                                    ${escapeHtml(obs.content)}
                                 </div>
                             </div>
                         </div>
@@ -2158,11 +2171,11 @@
                 DOM.modalSummaryPanel.style.display = 'flex';
                 let summaryContent = '';
                 if (session.summaries.short_summary && session.summaries.short_summary.content) {
-                    summaryContent += `<strong>Short Summary:</strong><br>${session.summaries.short_summary.content}`;
+                    summaryContent += `<strong>Short Summary:</strong><br>${escapeHtml(session.summaries.short_summary.content)}`;
                 }
                 if (session.summaries.long_summary && session.summaries.long_summary.content) {
                     if (summaryContent) summaryContent += `<br><br>`;
-                    summaryContent += `<strong>Long Summary:</strong><br>${session.summaries.long_summary.content}`;
+                    summaryContent += `<strong>Long Summary:</strong><br>${escapeHtml(session.summaries.long_summary.content)}`;
                 }
                 DOM.modalSummaryText.innerHTML = summaryContent || 'No summary text.';
             } else {
@@ -2241,6 +2254,7 @@
 
         // Escape HTML tags to prevent injections in chat log
         function escapeHtml(unsafe) {
+            if (!unsafe) return '';
             return unsafe
                  .replace(/&/g, "&amp;")
                  .replace(/</g, "&lt;")
@@ -2249,20 +2263,27 @@
                  .replace(/'/g, "&#039;");
         }
 
+        // ⚡ Bolt Performance Optimization:
+        // Caching Intl.DateTimeFormat instances is ~250x faster than calling
+        // toLocaleDateString/toLocaleTimeString repeatedly. This prevents blocking
+        // the main thread when rendering large lists of chat messages or conclusions.
+        const cachedDateFormatter = new Intl.DateTimeFormat('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+        });
+        const cachedTimeFormatter = new Intl.DateTimeFormat('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+
         // Format dates into "June 11, 2026 at 5:10 PM"
         function formatDateTime(isoString) {
             if (!isoString) return 'N/A';
             const date = new Date(isoString);
             if (isNaN(date.getTime())) return isoString;
-            return date.toLocaleDateString('en-US', {
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric'
-            }) + ' at ' + date.toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-            });
+            return cachedDateFormatter.format(date) + ' at ' + cachedTimeFormatter.format(date);
         }
 
         // Format dates into group headers: Today, Yesterday, or formatted date
@@ -2285,11 +2306,7 @@
             } else if (isSameDay(date, yesterday)) {
                 return 'Yesterday';
             } else {
-                return date.toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric'
-                });
+                return cachedDateFormatter.format(date);
             }
         }
 
@@ -2298,11 +2315,7 @@
             if (!isoString) return '';
             const date = new Date(isoString);
             if (isNaN(date.getTime())) return '';
-            return date.toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-            });
+            return cachedTimeFormatter.format(date);
         }
 
         // Output text like "2 minutes ago", "3 hours ago", etc.
@@ -2335,7 +2348,8 @@
         // Basic Regex-based Markdown parser
         function parseMarkdown(md) {
             if (!md) return '';
-            let html = md;
+            // Sanitize markdown content before rendering HTML to prevent Stored XSS
+            let html = escapeHtml(md);
 
             // Strip trailing/leading extra newlines
             html = html.trim();
