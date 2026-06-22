@@ -1735,32 +1735,42 @@
         // Fetch message count and summaries in parallel for sessions
         async function fetchSessionDetails(workspaceId, rawSessions) {
             try {
-                return await Promise.all(rawSessions.map(async (session) => {
-                    try {
-                        const msgPromise = fetch(`${HONCHO_API}/v3/workspaces/${workspaceId}/sessions/${session.id}/messages/list?size=1`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({})
-                        }).then(r => r.json());
+                const results = [];
+                // Chunk the sessions to prevent hundreds of concurrent requests,
+                // avoiding browser queuing delays and server connection drops.
+                const CHUNK_SIZE = 5;
 
-                        const summaryPromise = fetch(`${HONCHO_API}/v3/workspaces/${workspaceId}/sessions/${session.id}/summaries`).then(r => r.json());
+                for (let i = 0; i < rawSessions.length; i += CHUNK_SIZE) {
+                    const chunk = rawSessions.slice(i, i + CHUNK_SIZE);
+                    const chunkResults = await Promise.all(chunk.map(async (session) => {
+                        try {
+                            const msgPromise = fetch(`${HONCHO_API}/v3/workspaces/${workspaceId}/sessions/${session.id}/messages/list?size=1`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({})
+                            }).then(r => r.json());
 
-                        const [msgData, summaryData] = await Promise.all([msgPromise, summaryPromise]);
+                            const summaryPromise = fetch(`${HONCHO_API}/v3/workspaces/${workspaceId}/sessions/${session.id}/summaries`).then(r => r.json());
 
-                        return {
-                            ...session,
-                            messageCount: msgData.total || 0,
-                            summaries: summaryData
-                        };
-                    } catch (e) {
-                        console.error(`Failed to fetch details for session ${session.id}:`, e);
-                        return {
-                            ...session,
-                            messageCount: 0,
-                            summaries: { id: session.id, short_summary: null, long_summary: null }
-                        };
-                    }
-                }));
+                            const [msgData, summaryData] = await Promise.all([msgPromise, summaryPromise]);
+
+                            return {
+                                ...session,
+                                messageCount: msgData.total || 0,
+                                summaries: summaryData
+                            };
+                        } catch (e) {
+                            console.error(`Failed to fetch details for session ${session.id}:`, e);
+                            return {
+                                ...session,
+                                messageCount: 0,
+                                summaries: { id: session.id, short_summary: null, long_summary: null }
+                            };
+                        }
+                    }));
+                    results.push(...chunkResults);
+                }
+                return results;
             } catch (e) {
                 console.error("Failed in fetchSessionDetails:", e);
                 return rawSessions.map(s => ({
