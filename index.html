@@ -1620,13 +1620,29 @@
             }
 
             try {
-                // Fetch peers list
-                const peersResponse = await fetch(`${HONCHO_API}/v3/workspaces/${state.selectedWorkspaceId}/peers/list`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({})
-                });
+                // Fetch peers, conclusions, and sessions concurrently
+                const [peersResponse, conclusionsRes, sessionsRes] = await Promise.all([
+                    fetch(`${HONCHO_API}/v3/workspaces/${state.selectedWorkspaceId}/peers/list`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    }),
+                    fetch(`${HONCHO_API}/v3/workspaces/${state.selectedWorkspaceId}/conclusions/list?size=1`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    }),
+                    fetch(`${HONCHO_API}/v3/workspaces/${state.selectedWorkspaceId}/sessions/list?size=100`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    })
+                ]);
+
                 const peersData = await peersResponse.json();
+                const conclusionsData = await conclusionsRes.json();
+                const sessionsData = await sessionsRes.json();
+
                 state.peers = peersData.items || [];
 
                 // Render peers list in sidebar info block
@@ -1661,23 +1677,11 @@
                     state.selectedPeerId = '';
                 }
 
-                // Fetch total conclusions count
-                const conclusionsRes = await fetch(`${HONCHO_API}/v3/workspaces/${state.selectedWorkspaceId}/conclusions/list?size=1`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({})
-                });
-                const conclusionsData = await conclusionsRes.json();
+                // Total conclusions count
                 state.stats.conclusions = conclusionsData.total || 0;
                 DOM.statConclusions.innerText = state.stats.conclusions;
 
-                // Fetch total sessions count
-                const sessionsRes = await fetch(`${HONCHO_API}/v3/workspaces/${state.selectedWorkspaceId}/sessions/list?size=100`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({})
-                });
-                const sessionsData = await sessionsRes.json();
+                // Total sessions count
                 const rawSessions = sessionsData.items || [];
                 state.stats.sessions = sessionsData.total || 0;
                 DOM.statSessions.innerText = state.stats.sessions;
@@ -1701,15 +1705,9 @@
                     }
                 });
 
-                // Compare conclusions created_at
-                const newestConclusionRes = await fetch(`${HONCHO_API}/v3/workspaces/${state.selectedWorkspaceId}/conclusions/list?size=1`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({})
-                });
-                const newestConclusionData = await newestConclusionRes.json();
-                if (newestConclusionData.items && newestConclusionData.items.length > 0) {
-                    const latestConclusion = newestConclusionData.items[0];
+                // Compare conclusions created_at using already fetched data
+                if (conclusionsData.items && conclusionsData.items.length > 0) {
+                    const latestConclusion = conclusionsData.items[0];
                     if (!newestTimestamp || new Date(latestConclusion.created_at) > new Date(newestTimestamp)) {
                         newestTimestamp = latestConclusion.created_at;
                     }
