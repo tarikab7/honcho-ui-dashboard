@@ -2,6 +2,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Honcho UI Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.7/purify.min.js"></script>
     <style>
         /* CSS reset & variables */
         * {
@@ -1832,7 +1833,7 @@
                 }
 
                 if (contextData && contextData.representation) {
-                    DOM.overviewPeerContext.innerHTML = parseMarkdown(contextData.representation);
+                    DOM.overviewPeerContext.innerHTML = DOMPurify.sanitize(parseMarkdown(contextData.representation));
                 } else {
                     DOM.overviewPeerContext.innerHTML = `
                         <div class="empty-state">
