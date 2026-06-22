@@ -235,6 +235,20 @@
             border-color: #8b949e;
         }
 
+        .refresh-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+
         /* Main scrollable body */
         .content-scrollable {
             flex-grow: 1;
@@ -1093,12 +1107,12 @@
         <header>
             <div class="header-title" id="current-workspace-title">Workspace: hermes</div>
             <button class="refresh-btn" id="refresh-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg id="refresh-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="23 4 23 10 17 10"></polyline>
                     <polyline points="1 20 1 14 7 14"></polyline>
                     <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                 </svg>
-                Refresh
+                <span id="refresh-text">Refresh</span>
             </button>
         </header>
 
@@ -1364,6 +1378,8 @@
             globalErrorBanner: document.getElementById('global-error-banner'),
             globalErrorText: document.getElementById('global-error-text'),
             refreshBtn: document.getElementById('refresh-btn'),
+            refreshIcon: document.getElementById('refresh-icon'),
+            refreshText: document.getElementById('refresh-text'),
             navItems: document.querySelectorAll('.nav-item'),
             tabPanels: document.querySelectorAll('.tab-panel'),
 
@@ -1610,7 +1626,8 @@
         async function refreshActiveTab() {
             if (!state.selectedWorkspaceId) return;
             DOM.refreshBtn.disabled = true;
-            DOM.refreshBtn.innerText = 'Refreshing...';
+            DOM.refreshIcon.classList.add('spin');
+            DOM.refreshText.innerText = 'Refreshing...';
             
             await checkApiHealth();
             state.loadedTabs.clear(); // ⚡ Bolt: Clear tab cache on manual refresh
@@ -1618,7 +1635,8 @@
             await loadTabData(state.selectedTab, true);
             
             DOM.refreshBtn.disabled = false;
-            DOM.refreshBtn.innerText = 'Refresh';
+            DOM.refreshIcon.classList.remove('spin');
+            DOM.refreshText.innerText = 'Refresh';
         }
 
         // Load metadata and counts for the active workspace
