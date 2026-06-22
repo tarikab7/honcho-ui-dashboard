@@ -2027,9 +2027,9 @@
                 }
 
                 return `
-                    <div class="session-card" data-session-id="${s.id}">
+                    <div class="session-card" data-session-id="${escapeHtml(s.id)}">
                         <div class="session-header">
-                            <span class="session-id" title="${s.id}">${shortenedId}</span>
+                            <span class="session-id" title="${escapeHtml(s.id)}">${escapeHtml(shortenedId)}</span>
                             <span class="session-source-badge ${sourceClass}">${sourceText}</span>
                         </div>
                         <div class="session-meta-items">
@@ -2114,7 +2114,7 @@
                         <div class="timeline-item">
                             <div class="timeline-item-card">
                                 <div class="timeline-item-header">
-                                    <span class="timeline-item-session" data-session-id="${obs.sessionId}" title="View session details">Session: ${shortSessionId}</span>
+                                    <span class="timeline-item-session" data-session-id="${escapeHtml(obs.sessionId)}" title="View session details">Session: ${escapeHtml(shortSessionId)}</span>
                                     <span class="timeline-item-time">${formatTimeOnly(obs.createdAt)}</span>
                                 </div>
                                 <div class="timeline-item-content">
