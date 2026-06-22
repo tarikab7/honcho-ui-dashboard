@@ -1639,6 +1639,117 @@
             DOM.refreshText.innerText = 'Refresh';
         }
 
+        async function loadStats() {
+            // Fetch total conclusions count
+            const conclusionsRes = await fetch(`${HONCHO_API}/v3/workspaces/${state.selectedWorkspaceId}/conclusions/list?size=1`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            });
+            const conclusionsData = await conclusionsRes.json();
+            state.stats.conclusions = conclusionsData.total || 0;
+            DOM.statConclusions.innerText = state.stats.conclusions;
+
+            // Fetch total sessions count
+            const sessionsRes = await fetch(`${HONCHO_API}/v3/workspaces/${state.selectedWorkspaceId}/sessions/list?size=100`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            });
+            const sessionsData = await sessionsRes.json();
+            const rawSessions = sessionsData.items || [];
+            state.stats.sessions = sessionsData.total || 0;
+            DOM.statSessions.innerText = state.stats.sessions;
+
+            // Asynchronously resolve details for sessions to get summaries and message counts
+            state.sessionsLoading = true;
+            state.sessions = await fetchSessionDetails(state.selectedWorkspaceId, rawSessions);
+            state.sessionsLoading = false;
+
+            // Observations count (sessions that have a short_summary with content)
+            state.stats.observations = state.sessions.filter(s => s.summaries && s.summaries.short_summary && s.summaries.short_summary.content).length;
+            DOM.statObservations.innerText = state.stats.observations;
+
+            return rawSessions;
+        }
+
+        async function loadRecentActivity(rawSessions) {
+            // Calculate Last Activity Timestamp
+            let newestTimestamp = null;
+
+            // Compare sessions created_at
+            rawSessions.forEach(s => {
+                if (!newestTimestamp || new Date(s.created_at) > new Date(newestTimestamp)) {
+                    newestTimestamp = s.created_at;
+                }
+            });
+
+            // Compare conclusions created_at
+            const newestConclusionRes = await fetch(`${HONCHO_API}/v3/workspaces/${state.selectedWorkspaceId}/conclusions/list?size=1`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            });
+            const newestConclusionData = await newestConclusionRes.json();
+            if (newestConclusionData.items && newestConclusionData.items.length > 0) {
+                const latestConclusion = newestConclusionData.items[0];
+                if (!newestTimestamp || new Date(latestConclusion.created_at) > new Date(newestTimestamp)) {
+                    newestTimestamp = latestConclusion.created_at;
+                }
+            }
+
+            if (newestTimestamp) {
+                DOM.statLastActivity.innerText = formatTimeAgo(newestTimestamp);
+                DOM.statLastActivitySub.innerText = formatDateTime(newestTimestamp);
+            } else {
+                DOM.statLastActivity.innerText = 'Never';
+                DOM.statLastActivitySub.innerText = 'No recorded updates';
+            }
+        }
+
+        async function loadPeers() {
+            // Fetch peers list
+            const peersResponse = await fetch(`${HONCHO_API}/v3/workspaces/${state.selectedWorkspaceId}/peers/list`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            });
+            const peersData = await peersResponse.json();
+            state.peers = peersData.items || [];
+
+            // Render peers list in sidebar info block
+            DOM.infoPeersList.innerHTML = state.peers.map(p => `
+                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--card-border); padding:6px 10px; border-radius:4px; font-size:0.8rem; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight:600; color:#fff;">${p.id}</span>
+                    <span style="color:var(--text-muted); font-size:0.75rem;">peer</span>
+                </div>
+            `).join('');
+
+            // Check peer selector tab triggers
+            if (state.peers.length > 0) {
+                // Default to tarik peer if it exists, otherwise the first peer
+                state.selectedPeerId = state.peers.find(p => p.id === 'tarik') ? 'tarik' : state.peers[0].id;
+                
+                // Render peer selector tabs on Overview
+                DOM.peerSelectorTabs.style.display = 'flex';
+                DOM.peerSelectorTabs.innerHTML = state.peers.map(p => `
+                    <button class="peer-tab ${p.id === state.selectedPeerId ? 'active' : ''}" data-peer-id="${p.id}">${p.id}</button>
+                `).join('');
+
+                // Bind peer selectors
+                document.querySelectorAll('.peer-tab').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.peer-tab').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        selectPeer(e.target.getAttribute('data-peer-id'));
+                    });
+                });
+            } else {
+                DOM.peerSelectorTabs.style.display = 'none';
+                state.selectedPeerId = '';
+            }
+        }
+
         // Load metadata and counts for the active workspace
         async function loadWorkspaceMeta() {
             if (!state.selectedWorkspaceId) return;
