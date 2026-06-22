@@ -1324,6 +1324,8 @@
     </div>
 
     <!-- JAVASCRIPT CODE -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
     <script>
         // API Settings - Allow configuration via window.HONCHO_API_URL or fallback to hostname:8080
         const getHonchoApiUrl = () => {
@@ -2483,64 +2485,10 @@
         // Basic Regex-based Markdown parser
         function parseMarkdown(md) {
             if (!md) return '';
-            // Sanitize markdown content before rendering HTML to prevent Stored XSS
-            let html = escapeHtml(md);
-
-            // Strip trailing/leading extra newlines
-            html = html.trim();
-
-            // Headings
-            html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-            html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-            html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
-
-            // Bold styling: **text** -> <strong>text</strong>
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-            // Bullets list logic line-by-line
-            let lines = html.split('\n');
-            let inList = false;
-            for (let i = 0; i < lines.length; i++) {
-                let line = lines[i].trim();
-                
-                // Matches markdown bullets "- " or "* " or " * " or " - "
-                const matchBullet = line.match(/^[\s]*[\-\*]\s(.*)$/);
-                if (matchBullet) {
-                    let itemContent = matchBullet[1];
-                    if (!inList) {
-                        lines[i] = '<ul><li>' + itemContent + '</li>';
-                        inList = true;
-                    } else {
-                        lines[i] = '<li>' + itemContent + '</li>';
-                    }
-                } else {
-                    if (inList && line === '') {
-                        // Empty line inside lists
-                        continue;
-                    }
-                    if (inList && !matchBullet) {
-                        lines[i] = '</ul>' + lines[i];
-                        inList = false;
-                    }
-                }
-            }
-            if (inList) {
-                lines.push('</ul>');
-            }
-            html = lines.join('\n');
-
-            // Paragraph blocks grouping
-            html = html.split('\n\n').map(p => {
-                p = p.trim();
-                if (!p) return '';
-                // Don't wrap list or header blocks in extra <p> elements
-                if (p.startsWith('<h') || p.startsWith('<ul') || p.startsWith('<li') || p.startsWith('</ul')) {
-                    return p;
-                }
-                return '<p>' + p.replace(/\n/g, '<br>') + '</p>';
-            }).join('\n');
-
-            return html;
+            // Use marked to parse the markdown
+            let rawHtml = marked.parse(md);
+            // Sanitize the resulting HTML output to prevent Stored XSS
+            return DOMPurify.sanitize(rawHtml);
         }
     </script>
 
