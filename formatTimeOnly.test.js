@@ -7,7 +7,7 @@ const html = fs.readFileSync('index.html', 'utf8');
 
 // Safely extract just the function definition using a more robust regex
 // that isn't dependent on exact line indents for the closing brace.
-const match = html.match(/function\s+formatTimeOnly\s*\([^)]*\)\s*{[\s\S]*?toLocaleTimeString[^}]*}\);?\n\s*}/);
+const match = html.match(/function\s+formatTimeOnly\s*\([^)]*\)\s*{[\s\S]*?cachedTimeFormatter\.format\(date\);\n\s*}/);
 if (!match) {
     throw new Error('Could not find formatTimeOnly function in index.html');
 }
@@ -36,8 +36,16 @@ test('formatTimeOnly timezone integration tests', () => {
     // Create a small script that loads the function and runs it.
     const runnerScript = `
         const html = require('fs').readFileSync('index.html', 'utf8');
-        const match = html.match(/function\\s+formatTimeOnly\\s*\\([^)]*\\)\\s*{[\\s\\S]*?toLocaleTimeString[^}]*}\\);?\\n\\s*}/);
+        const match = html.match(/function\\s+formatTimeOnly\\s*\\([^)]*\\)\\s*{[\\s\\S]*?cachedTimeFormatter\\.format\\(date\\);\\n\\s*}/);
         const formatTimeOnly = new Function(\`return \${match[0]}\`)();
+
+        // Mock cachedTimeFormatter because it is not available in isolated context
+        global.cachedTimeFormatter = new Intl.DateTimeFormat('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+
         const res = formatTimeOnly(process.argv[2]);
         // Node 18+ may use U+202F (Narrow No-Break Space) before AM/PM. Replace it with a regular space to make assertions simpler.
         console.log(res.replace(/\\u202F/g, ' '));

@@ -37,6 +37,10 @@ test('formatTimeAgo handles relative times correctly', (t) => {
                 super(...args);
             }
         }
+
+        static now() {
+            return fixedTimestamp;
+        }
     };
 
     try {
@@ -49,22 +53,27 @@ test('formatTimeAgo handles relative times correctly', (t) => {
 
         // Minutes
         assert.strictEqual(formatTimeAgo('2024-01-01T11:59:00.000Z'), '1 minute ago');
+        assert.strictEqual(formatTimeAgo('2024-01-01T11:58:00.000Z'), '2 minutes ago');
         assert.strictEqual(formatTimeAgo('2024-01-01T11:50:00.000Z'), '10 minutes ago');
 
         // Hours
         assert.strictEqual(formatTimeAgo('2024-01-01T11:00:00.000Z'), '1 hour ago');
+        assert.strictEqual(formatTimeAgo('2024-01-01T10:00:00.000Z'), '2 hours ago');
         assert.strictEqual(formatTimeAgo('2024-01-01T09:00:00.000Z'), '3 hours ago');
 
         // Days
         assert.strictEqual(formatTimeAgo('2023-12-31T12:00:00.000Z'), '1 day ago');
+        assert.strictEqual(formatTimeAgo('2023-12-30T12:00:00.000Z'), '2 days ago');
         assert.strictEqual(formatTimeAgo('2023-12-28T12:00:00.000Z'), '4 days ago');
 
         // Months
         assert.strictEqual(formatTimeAgo('2023-12-01T12:00:00.000Z'), '1 month ago');
+        assert.strictEqual(formatTimeAgo('2023-11-01T12:00:00.000Z'), '2 months ago');
         assert.strictEqual(formatTimeAgo('2023-08-01T12:00:00.000Z'), '5 months ago');
 
         // Years
         assert.strictEqual(formatTimeAgo('2023-01-01T12:00:00.000Z'), '1 year ago');
+        assert.strictEqual(formatTimeAgo('2022-01-01T12:00:00.000Z'), '2 years ago');
         assert.strictEqual(formatTimeAgo('2020-01-01T12:00:00.000Z'), '4 years ago');
 
     } finally {
