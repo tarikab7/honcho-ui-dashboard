@@ -1946,7 +1946,7 @@
                 const truncatedContent = isLongText ? c.content.substring(0, 200) + '...' : c.content;
                 
                 return `
-                    <div class="conclusion-card ${isLongText ? 'expandable' : ''}" data-full-text="${encodeURIComponent(c.content)}" data-truncated-text="${encodeURIComponent(truncatedContent)}" data-expanded="false">
+                    <div class="conclusion-card ${isLongText ? 'expandable' : ''}" data-full-text="${encodeURIComponent(escapeHtml(c.content))}" data-truncated-text="${encodeURIComponent(escapeHtml(truncatedContent))}" data-expanded="false">
                         <div class="conclusion-meta">
                             <div class="conclusion-tags">
                                 <span class="tag blue">Observer: ${escapeHtml(c.observer_id)}</span>
@@ -2030,7 +2030,7 @@
                 // Summary preview
                 let summaryPreview = 'No summary text generated.';
                 if (s.summaries && s.summaries.short_summary && s.summaries.short_summary.content) {
-                    summaryPreview = s.summaries.short_summary.content;
+                    summaryPreview = escapeHtml(s.summaries.short_summary.content);
                 }
 
                 return `
@@ -2073,7 +2073,7 @@
                 if (s.summaries && s.summaries.short_summary && s.summaries.short_summary.content) {
                     observations.push({
                         sessionId: s.id,
-                        content: s.summaries.short_summary.content,
+                        content: escapeHtml(s.summaries.short_summary.content),
                         createdAt: s.summaries.short_summary.created_at || s.created_at
                     });
                 }
