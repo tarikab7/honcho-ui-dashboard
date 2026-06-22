@@ -2151,11 +2151,11 @@
                 DOM.modalSummaryPanel.style.display = 'flex';
                 let summaryContent = '';
                 if (session.summaries.short_summary && session.summaries.short_summary.content) {
-                    summaryContent += `<strong>Short Summary:</strong><br>${session.summaries.short_summary.content}`;
+                    summaryContent += `<strong>Short Summary:</strong><br>${escapeHtml(session.summaries.short_summary.content)}`;
                 }
                 if (session.summaries.long_summary && session.summaries.long_summary.content) {
                     if (summaryContent) summaryContent += `<br><br>`;
-                    summaryContent += `<strong>Long Summary:</strong><br>${session.summaries.long_summary.content}`;
+                    summaryContent += `<strong>Long Summary:</strong><br>${escapeHtml(session.summaries.long_summary.content)}`;
                 }
                 DOM.modalSummaryText.innerHTML = summaryContent || 'No summary text.';
             } else {
