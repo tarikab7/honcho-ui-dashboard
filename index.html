@@ -1306,9 +1306,9 @@
     <script>
         // API Settings - Dynamically fallback to window.location.hostname if available, otherwise use default
         const getHonchoApiUrl = () => {
-            const defaultIp = '192.168.178.61';
+            if (window.HONCHO_API_URL) return window.HONCHO_API_URL;
             const hostname = window.location.hostname;
-            const targetIp = (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1' && !hostname.includes('::')) ? hostname : defaultIp;
+            const targetIp = (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1' && !hostname.includes('::')) ? hostname : 'localhost';
             return `http://${targetIp}:8080`;
         };
         const HONCHO_API = getHonchoApiUrl();
@@ -2234,6 +2234,7 @@
 
         // Escape HTML tags to prevent injections in chat log
         function escapeHtml(unsafe) {
+            if (!unsafe) return '';
             return unsafe
                  .replace(/&/g, "&amp;")
                  .replace(/</g, "&lt;")
@@ -2328,7 +2329,8 @@
         // Basic Regex-based Markdown parser
         function parseMarkdown(md) {
             if (!md) return '';
-            let html = md;
+            // Sanitize markdown content before rendering HTML to prevent Stored XSS
+            let html = escapeHtml(md);
 
             // Strip trailing/leading extra newlines
             html = html.trim();
