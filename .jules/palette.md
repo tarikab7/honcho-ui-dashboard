@@ -1,0 +1,3 @@
+## 2026-06-18 - Div Elements as Buttons
+**Learning:** The application extensively uses `div` elements (like `.session-card` and `.conclusion-card`) with click listeners for interactive content without providing `tabindex` or keyboard event handlers (`keydown`), rendering these core interactions completely inaccessible to keyboard and screen reader users.
+**Action:** In future updates or new components, interactive elements should either use semantic `<button>` / `<a>` tags, or `div` elements must be explicitly equipped with `tabindex="0"`, `role="button"`, and `keydown` handlers for Enter/Space keys to ensure full accessibility.
