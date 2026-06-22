@@ -2,9 +2,9 @@
   "name": "app",
   "version": "1.0.0",
   "description": "A dark-themed, read-only web dashboard for viewing data from a **self-hosted Honcho** instance.",
-  "main": "formatTimeOnly.test.js",
+  "main": "index.js",
   "scripts": {
-    "test": "node --test formatTimeOnly.test.js"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -17,5 +17,11 @@
   "bugs": {
     "url": "https://github.com/tarikab7/honcho-ui-dashboard/issues"
   },
-  "homepage": "https://github.com/tarikab7/honcho-ui-dashboard#readme"
+  "homepage": "https://github.com/tarikab7/honcho-ui-dashboard#readme",
+  "devDependencies": {
+    "jest": "^30.4.2"
+  },
+  "dependencies": {
+    "jsdom": "^22.1.0"
+  }
 }
