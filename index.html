@@ -1492,6 +1492,25 @@
                     closeModal();
                 }
             });
+
+            // Global keyboard accessibility handlers
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+
+                if (e.key === 'Enter' || e.key === ' ') {
+                    const activeEl = document.activeElement;
+                    if (
+                        activeEl.classList.contains('session-card') ||
+                        (activeEl.classList.contains('conclusion-card') && activeEl.classList.contains('expandable')) ||
+                        activeEl.classList.contains('timeline-item-session')
+                    ) {
+                        e.preventDefault();
+                        activeEl.click();
+                    }
+                }
+            });
         }
 
         // Switch active tab view
@@ -2084,7 +2103,7 @@
                 const truncatedContent = isLongText ? c.content.substring(0, 200) + '...' : c.content;
                 
                 return `
-                    <div class="conclusion-card ${isLongText ? 'expandable' : ''}" data-full-text="${encodeURIComponent(escapeHtml(c.content))}" data-truncated-text="${encodeURIComponent(escapeHtml(truncatedContent))}" data-expanded="false">
+                    <div class="conclusion-card ${isLongText ? 'expandable' : ''}" data-full-text="${encodeURIComponent(escapeHtml(c.content))}" data-truncated-text="${encodeURIComponent(escapeHtml(truncatedContent))}" data-expanded="false" ${isLongText ? 'role="button" tabindex="0"' : ''}>
                         <div class="conclusion-meta">
                             <div class="conclusion-tags">
                                 <span class="tag blue">Observer: ${escapeHtml(c.observer_id)}</span>
@@ -2172,7 +2191,7 @@
                 }
 
                 return `
-                    <div class="session-card" data-session-id="${escapeHtml(s.id)}">
+                    <div class="session-card" data-session-id="${escapeHtml(s.id)}" role="button" tabindex="0">
                         <div class="session-header">
                             <span class="session-id" title="${escapeHtml(s.id)}">${escapeHtml(shortenedId)}</span>
                             <span class="session-source-badge ${sourceClass}">${sourceText}</span>
@@ -2259,7 +2278,7 @@
                         <div class="timeline-item">
                             <div class="timeline-item-card">
                                 <div class="timeline-item-header">
-                                    <span class="timeline-item-session" data-session-id="${escapeHtml(obs.sessionId)}" title="View session details">Session: ${escapeHtml(shortSessionId)}</span>
+                                    <span class="timeline-item-session" data-session-id="${escapeHtml(obs.sessionId)}" title="View session details" role="button" tabindex="0">Session: ${escapeHtml(shortSessionId)}</span>
                                     <span class="timeline-item-time">${formatTimeOnly(obs.createdAt)}</span>
                                 </div>
                                 <div class="timeline-item-content">
