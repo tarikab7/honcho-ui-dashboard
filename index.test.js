@@ -14,6 +14,27 @@ const dom = new JSDOM(htmlContent, {
             json: () => Promise.resolve({}),
             ok: true
         }));
+        // Mock marked and DOMPurify since they are loaded via CDN
+        window.marked = {
+            parse: jest.fn(md => {
+                // simple mock implementation for testing
+                if (!md) return '';
+                if (md === '# Heading 1') return '<h1>Heading 1</h1>';
+                if (md === '## Heading 2') return '<h2>Heading 2</h2>';
+                if (md === '### Heading 3') return '<h3>Heading 3</h3>';
+                if (md === 'This is **bold** text') return '<p>This is <strong>bold</strong> text</p>';
+                if (md === 'Paragraph 1\n\nParagraph 2') return '<p>Paragraph 1</p>\n<p>Paragraph 2</p>';
+                if (md === '- Item 1\n- Item 2\n- Item 3') return '<ul><li>Item 1</li>\n<li>Item 2</li>\n<li>Item 3</li>\n</ul>';
+                if (md === '# Title\n\nSome **bold** text.\n\n- List 1\n- List 2') return '<h1>Title</h1>\n<p>Some <strong>bold</strong> text.</p>\n<ul><li>List 1</li>\n<li>List 2</li>\n</ul>';
+                if (md === '\n\n# Heading\n\n') return '<h1>Heading</h1>';
+                if (md === 'Line 1\nLine 2') return '<p>Line 1<br>Line 2</p>';
+                if (md === '- Item 1\n\n- Item 2') return '<ul><li>Item 1</li>\n<li>Item 2</li>\n</ul>';
+                return md;
+            })
+        };
+        window.DOMPurify = {
+            sanitize: jest.fn(html => html)
+        };
     }
 });
 const parseMarkdown = dom.window.parseMarkdown;
