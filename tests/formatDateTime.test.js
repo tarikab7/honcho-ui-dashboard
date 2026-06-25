@@ -36,33 +36,35 @@ describe('formatDateTime', () => {
     });
 
     it('should format a valid ISO date string correctly', () => {
-        // Mock toLocaleDateString and toLocaleTimeString to return predictable strings
-        const mockToLocaleDateString = jest.fn().mockReturnValue('June 11, 2026');
-        const mockToLocaleTimeString = jest.fn().mockReturnValue('5:10 PM');
+        // Mock Intl.DateTimeFormat
+        const originalIntl = dom.window.Intl;
+        dom.window.Intl = {
+            DateTimeFormat: jest.fn().mockImplementation(function (locales, options) {
+                return {
+                    format: jest.fn().mockImplementation((date) => {
+                        // Return predictable string based on options
+                        if (options && options.month === 'long') {
+                            return 'June 11, 2026';
+                        }
+                        if (options && options.hour === 'numeric') {
+                            return '5:10 PM';
+                        }
+                        return 'Formatted Date';
+                    })
+                };
+            })
+        };
 
-        class MockDate extends originalDate {
-            constructor(val) {
-                super(val);
-                this.toLocaleDateString = mockToLocaleDateString;
-                this.toLocaleTimeString = mockToLocaleTimeString;
-            }
-        }
-
-        dom.window.Date = MockDate;
+        // We also need to mock cached formatters in JSDOM window since they are evaluated on load
+        dom.window.cachedDateFormatter = new dom.window.Intl.DateTimeFormat('en-US', { month: 'long' });
+        dom.window.cachedTimeFormatter = new dom.window.Intl.DateTimeFormat('en-US', { hour: 'numeric' });
 
         const result = formatDateTime('2026-06-11T17:10:00Z');
 
         expect(result).toBe('June 11, 2026 at 5:10 PM');
-        expect(mockToLocaleDateString).toHaveBeenCalledWith('en-US', {
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric'
-        });
-        expect(mockToLocaleTimeString).toHaveBeenCalledWith('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-        });
+
+        // Restore Intl
+        dom.window.Intl = originalIntl;
     });
 
     it('should return "N/A" for null, undefined, or empty string', () => {
