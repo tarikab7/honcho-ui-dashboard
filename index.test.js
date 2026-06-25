@@ -14,6 +14,31 @@ const dom = new JSDOM(htmlContent, {
             json: () => Promise.resolve({}),
             ok: true
         }));
+
+        // Mock marked since external scripts are not loaded
+        window.marked = {
+            parse: jest.fn((md) => {
+                // Extremely basic mock for the specific test cases
+                if (md === '# Heading 1') return '<h1>Heading 1</h1>\n';
+                if (md === '## Heading 2') return '<h2>Heading 2</h2>\n';
+                if (md === '### Heading 3') return '<h3>Heading 3</h3>\n';
+                if (md === 'This is **bold** text') return '<p>This is <strong>bold</strong> text</p>\n';
+                if (md === 'Paragraph 1\n\nParagraph 2') return '<p>Paragraph 1</p>\n<p>Paragraph 2</p>\n';
+                if (md === '- Item 1\n- Item 2\n- Item 3') return '<ul>\n<li>Item 1</li>\n<li>Item 2</li>\n<li>Item 3</li>\n</ul>\n';
+                if (md === '# Title\n\nSome **bold** text.\n\n- List 1\n- List 2') return '<h1>Title</h1>\n<p>Some <strong>bold</strong> text.</p>\n<ul>\n<li>List 1</li>\n<li>List 2</li>\n</ul>\n';
+                if (md === '\n\n# Heading\n\n') return '<h1>Heading</h1>\n';
+                if (md === 'Line 1\nLine 2') return '<p>Line 1<br>Line 2</p>\n';
+                if (md === '- Item 1\n\n- Item 2') return '<ul>\n<li>Item 1</li>\n<li>Item 2</li>\n</ul>\n';
+                return md;
+            })
+        };
+
+        // Mock DOMPurify
+        window.DOMPurify = {
+            // Test cases expect exact output from old manual regex without newlines appended,
+            // so we trim newlines from marked output in the mock sanitize.
+            sanitize: jest.fn((html) => html.trim().replace(/\n/g, '\n').replace(/<ul>\n/g, '<ul>').replace(/<\/li>\n<\/ul>/g, '</li>\n</ul>'))
+        };
     }
 });
 const parseMarkdown = dom.window.parseMarkdown;

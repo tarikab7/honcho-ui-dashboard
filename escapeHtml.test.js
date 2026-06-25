@@ -5,10 +5,24 @@ const { JSDOM } = require('jsdom');
 describe('escapeHtml', () => {
     let escapeHtml;
 
+    let dom;
+
     beforeAll(() => {
         const html = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf8');
-        const dom = new JSDOM(html, { runScripts: "dangerously" });
+        dom = new JSDOM(html, {
+            runScripts: "dangerously",
+            beforeParse(window) {
+                window.fetch = jest.fn(() => Promise.resolve({
+                    json: () => Promise.resolve({}),
+                    ok: true
+                }));
+            }
+        });
         escapeHtml = dom.window.escapeHtml;
+    });
+
+    afterAll(() => {
+        dom.window.close();
     });
 
     test('escapes HTML tags properly', () => {

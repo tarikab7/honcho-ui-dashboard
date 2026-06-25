@@ -1723,7 +1723,7 @@
             // Render peers list in sidebar info block
             DOM.infoPeersList.innerHTML = state.peers.map(p => `
                 <div style="background:rgba(255,255,255,0.02); border:1px solid var(--card-border); padding:6px 10px; border-radius:4px; font-size:0.8rem; display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-weight:600; color:#fff;">${p.id}</span>
+                    <span style="font-weight:600; color:#fff;">${escapeHtml(p.id)}</span>
                     <span style="color:var(--text-muted); font-size:0.75rem;">peer</span>
                 </div>
             `).join('');
@@ -1736,7 +1736,7 @@
                 // Render peer selector tabs on Overview
                 DOM.peerSelectorTabs.style.display = 'flex';
                 DOM.peerSelectorTabs.innerHTML = state.peers.map(p => `
-                    <button class="peer-tab ${p.id === state.selectedPeerId ? 'active' : ''}" data-peer-id="${p.id}">${p.id}</button>
+                    <button class="peer-tab ${p.id === state.selectedPeerId ? 'active' : ''}" data-peer-id="${escapeHtml(p.id)}">${escapeHtml(p.id)}</button>
                 `).join('');
 
                 // Bind peer selectors
@@ -2369,7 +2369,7 @@
                 return `
                     <div class="message-bubble ${bubbleClass}">
                         <div class="message-header">
-                            <span class="message-sender ${senderClass}">${senderLabel}</span>
+                            <span class="message-sender ${senderClass}">${escapeHtml(senderLabel)}</span>
                             <span class="message-time">${formatTimeOnly(msg.created_at)}</span>
                         </div>
                         <div class="message-text">${escapeHtml(msg.content)}</div>
@@ -2392,8 +2392,8 @@
 
         // Escape HTML tags to prevent injections in chat log
         function escapeHtml(unsafe) {
-            if (!unsafe) return '';
-            return unsafe
+            if (unsafe == null) return '';
+            return String(unsafe)
                  .replace(/&/g, "&amp;")
                  .replace(/</g, "&lt;")
                  .replace(/>/g, "&gt;")
