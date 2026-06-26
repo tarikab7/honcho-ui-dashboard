@@ -36,33 +36,12 @@ describe('formatDateTime', () => {
     });
 
     it('should format a valid ISO date string correctly', () => {
-        // Mock toLocaleDateString and toLocaleTimeString to return predictable strings
-        const mockToLocaleDateString = jest.fn().mockReturnValue('June 11, 2026');
-        const mockToLocaleTimeString = jest.fn().mockReturnValue('5:10 PM');
-
-        class MockDate extends originalDate {
-            constructor(val) {
-                super(val);
-                this.toLocaleDateString = mockToLocaleDateString;
-                this.toLocaleTimeString = mockToLocaleTimeString;
-            }
-        }
-
-        dom.window.Date = MockDate;
-
         const result = formatDateTime('2026-06-11T17:10:00Z');
 
-        expect(result).toBe('June 11, 2026 at 5:10 PM');
-        expect(mockToLocaleDateString).toHaveBeenCalledWith('en-US', {
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric'
-        });
-        expect(mockToLocaleTimeString).toHaveBeenCalledWith('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-        });
+        // Since Intl.DateTimeFormat can be tricky to mock reliably across all node environments,
+        // and we are just testing the format output, we evaluate the resulting string format based on the known date.
+        // Node 18+ may use U+202F (Narrow No-Break Space) before AM/PM. We replace it to match standard space.
+        expect(result.replace(/\u202F/g, ' ')).toBe('June 11, 2026 at 5:10 PM');
     });
 
     it('should return "N/A" for null, undefined, or empty string', () => {
