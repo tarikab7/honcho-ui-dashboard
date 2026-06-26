@@ -2393,7 +2393,7 @@
         // Escape HTML tags to prevent injections in chat log
         function escapeHtml(unsafe) {
             if (!unsafe) return '';
-            return unsafe
+            return String(unsafe)
                  .replace(/&/g, "&amp;")
                  .replace(/</g, "&lt;")
                  .replace(/>/g, "&gt;")

@@ -14,6 +14,50 @@ const dom = new JSDOM(htmlContent, {
             json: () => Promise.resolve({}),
             ok: true
         }));
+
+        // Mock marked
+        window.marked = {
+            parse: jest.fn((md) => {
+                if (!md) return '';
+                let result = md.trim();
+
+                // Basic Markdown parsing for tests
+                // Lists
+                if (result.includes('- ')) {
+                    let listMatch = result.match(/(?:^- .*(?:\n|$)+)+/gm);
+                    if (listMatch) {
+                        listMatch.forEach(match => {
+                            const listItems = match.split('\n')
+                                .filter(line => line.trim().startsWith('- '))
+                                .map(line => line.replace(/^- (.*)/, '<li>$1</li>'))
+                                .join('\n');
+                            result = result.replace(match, `<ul>${listItems}\n</ul>`);
+                        });
+                    }
+                }
+
+                // Headings
+                result = result.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+                result = result.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+                result = result.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+
+                // Bold
+                result = result.replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>');
+
+                // Paragraphs (if not heading or list)
+                result = result.split('\n\n').map(part => {
+                    if (part.startsWith('<h') || part.startsWith('<ul>')) return part;
+                    return `<p>${part.replace(/\n/g, '<br>')}</p>`;
+                }).join('\n');
+
+                return result;
+            })
+        };
+
+        // Mock DOMPurify
+        window.DOMPurify = {
+            sanitize: jest.fn((html) => html)
+        };
     }
 });
 const parseMarkdown = dom.window.parseMarkdown;

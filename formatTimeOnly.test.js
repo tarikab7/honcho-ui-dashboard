@@ -5,16 +5,23 @@ const { execSync } = require('child_process');
 
 const html = fs.readFileSync('index.html', 'utf8');
 
-// Safely extract just the function definition using a more robust regex
-// that isn't dependent on exact line indents for the closing brace.
-const match = html.match(/function\s+formatTimeOnly\s*\([^)]*\)\s*{[\s\S]*?toLocaleTimeString[^}]*}\);?\n\s*}/);
-if (!match) {
+// Extract cachedTimeFormatter initialization and formatTimeOnly function
+const formatterMatch = html.match(/const\s+cachedTimeFormatter\s*=\s*new\s+Intl\.DateTimeFormat\([^)]*\)\s*;/);
+const functionMatch = html.match(/function\s+formatTimeOnly\s*\([^)]*\)\s*{[\s\S]*?cachedTimeFormatter\.format[^}]*}/);
+
+if (!formatterMatch) {
+    throw new Error('Could not find cachedTimeFormatter in index.html');
+}
+if (!functionMatch) {
     throw new Error('Could not find formatTimeOnly function in index.html');
 }
 
-const functionCode = match[0];
-// Evaluate only the function itself to avoid global side-effects
-const formatTimeOnly = new Function(`return ${functionCode}`)();
+// Evaluate both in a single scope
+const formatTimeOnly = new Function(`
+    ${formatterMatch[0]}
+    ${functionMatch[0]}
+    return formatTimeOnly;
+`)();
 
 test('formatTimeOnly unit tests', async (t) => {
     await t.test('returns empty string for falsy values', () => {
@@ -36,8 +43,13 @@ test('formatTimeOnly timezone integration tests', () => {
     // Create a small script that loads the function and runs it.
     const runnerScript = `
         const html = require('fs').readFileSync('index.html', 'utf8');
-        const match = html.match(/function\\s+formatTimeOnly\\s*\\([^)]*\\)\\s*{[\\s\\S]*?toLocaleTimeString[^}]*}\\);?\\n\\s*}/);
-        const formatTimeOnly = new Function(\`return \${match[0]}\`)();
+        const formatterMatch = html.match(/const\\s+cachedTimeFormatter\\s*=\\s*new\\s+Intl\\.DateTimeFormat\\([^)]*\\)\\s*;/);
+        const functionMatch = html.match(/function\\s+formatTimeOnly\\s*\\([^)]*\\)\\s*{[\\s\\S]*?cachedTimeFormatter\\.format[^}]*}/);
+        const formatTimeOnly = new Function(\`
+            \${formatterMatch[0]}
+            \${functionMatch[0]}
+            return formatTimeOnly;
+        \`)();
         const res = formatTimeOnly(process.argv[2]);
         // Node 18+ may use U+202F (Narrow No-Break Space) before AM/PM. Replace it with a regular space to make assertions simpler.
         console.log(res.replace(/\\u202F/g, ' '));
