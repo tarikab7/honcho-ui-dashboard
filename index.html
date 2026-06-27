@@ -2391,14 +2391,17 @@
         /* GENERAL UTILITY HELPERS */
 
         // Escape HTML tags to prevent injections in chat log
+        const htmlEscapes = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        const escapeHtmlRegex = /[&<>"']/g;
         function escapeHtml(unsafe) {
-            if (!unsafe) return '';
-            return unsafe
-                 .replace(/&/g, "&amp;")
-                 .replace(/</g, "&lt;")
-                 .replace(/>/g, "&gt;")
-                 .replace(/"/g, "&quot;")
-                 .replace(/'/g, "&#039;");
+            if (unsafe == null) return '';
+            return String(unsafe).replace(escapeHtmlRegex, match => htmlEscapes[match]);
         }
 
         // ⚡ Bolt Performance Optimization:
