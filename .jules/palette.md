@@ -1,3 +1,7 @@
 ## 2026-06-18 - Div Elements as Buttons
 **Learning:** The application extensively uses `div` elements (like `.session-card` and `.conclusion-card`) with click listeners for interactive content without providing `tabindex` or keyboard event handlers (`keydown`), rendering these core interactions completely inaccessible to keyboard and screen reader users.
 **Action:** In future updates or new components, interactive elements should either use semantic `<button>` / `<a>` tags, or `div` elements must be explicitly equipped with `tabindex="0"`, `role="button"`, and `keydown` handlers for Enter/Space keys to ensure full accessibility.
+
+## 2026-06-28 - Keyboard accessibility of non-native cards
+**Learning:** Found a specific pattern in the app where non-native interactive elements like `conclusion-card.expandable`, `session-card`, and `timeline-item-session` (which are essentially <div> or <span>) lacked `tabindex`, `role`, and `keydown` handlers for Enter/Space, preventing keyboard-only users from interacting with them.
+**Action:** Ensure all interactive cards using non-native elements (`div`/`span`) include `tabindex="0"`, `role="button"`, and listen for both `click` and `keydown` (handling Enter and Space) events to make them fully accessible.
