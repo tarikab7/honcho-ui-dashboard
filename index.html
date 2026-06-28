@@ -1492,6 +1492,62 @@
                     closeModal();
                 }
             });
+
+            // ⚡ Bolt Performance Optimization: Event Delegation
+            // Using a single event listener on the parent container instead of attaching
+            // individual listeners to every dynamically rendered element. This prevents
+            // memory leaks and reduces main thread blocking during renders.
+
+            // Peer Selector Delegation
+            DOM.peerSelectorTabs.addEventListener('click', (e) => {
+                const target = e.target.closest('.peer-tab');
+                if (target) {
+                    DOM.peerSelectorTabs.querySelectorAll('.peer-tab').forEach(b => b.classList.remove('active'));
+                    target.classList.add('active');
+                    selectPeer(target.getAttribute('data-peer-id'));
+                }
+            });
+
+            // Conclusions List Delegation
+            DOM.conclusionsGridContainer.addEventListener('click', (e) => {
+                const card = e.target.closest('.conclusion-card.expandable');
+                if (card) {
+                    const isExpanded = card.getAttribute('data-expanded') === 'true';
+                    const fullText = decodeURIComponent(card.getAttribute('data-full-text'));
+                    const truncatedText = decodeURIComponent(card.getAttribute('data-truncated-text'));
+                    const contentDiv = card.querySelector('.conclusion-content');
+                    const hintDiv = card.querySelector('.conclusion-expand-hint');
+
+                    if (isExpanded) {
+                        contentDiv.innerText = truncatedText;
+                        hintDiv.innerText = 'Click to expand';
+                        card.setAttribute('data-expanded', 'false');
+                    } else {
+                        contentDiv.innerText = fullText;
+                        hintDiv.innerText = 'Click to collapse';
+                        card.setAttribute('data-expanded', 'true');
+                    }
+                }
+            });
+
+            // Sessions Grid Delegation
+            DOM.sessionsGridContainer.addEventListener('click', (e) => {
+                const card = e.target.closest('.session-card');
+                if (card) {
+                    const sessionId = card.getAttribute('data-session-id');
+                    openSessionModal(sessionId);
+                }
+            });
+
+            // Observations Timeline Delegation
+            DOM.observationsTimelineContainer.addEventListener('click', (e) => {
+                const link = e.target.closest('.timeline-item-session');
+                if (link) {
+                    e.stopPropagation();
+                    const sId = link.getAttribute('data-session-id');
+                    openSessionModal(sId);
+                }
+            });
         }
 
         // Switch active tab view
@@ -1739,14 +1795,6 @@
                     <button class="peer-tab ${p.id === state.selectedPeerId ? 'active' : ''}" data-peer-id="${p.id}">${p.id}</button>
                 `).join('');
 
-                // Bind peer selectors
-                document.querySelectorAll('.peer-tab').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        document.querySelectorAll('.peer-tab').forEach(b => b.classList.remove('active'));
-                        e.target.classList.add('active');
-                        selectPeer(e.target.getAttribute('data-peer-id'));
-                    });
-                });
             } else {
                 DOM.peerSelectorTabs.style.display = 'none';
                 state.selectedPeerId = '';
@@ -1808,14 +1856,6 @@
                         <button class="peer-tab ${p.id === state.selectedPeerId ? 'active' : ''}" data-peer-id="${escapeHtml(p.id)}">${escapeHtml(p.id)}</button>
                     `).join('');
                     
-                    // Bind peer selectors
-                    document.querySelectorAll('.peer-tab').forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            document.querySelectorAll('.peer-tab').forEach(b => b.classList.remove('active'));
-                            e.target.classList.add('active');
-                            selectPeer(e.target.getAttribute('data-peer-id'));
-                        });
-                    });
                 } else {
                     DOM.peerSelectorTabs.style.display = 'none';
                     state.selectedPeerId = '';
@@ -2099,27 +2139,6 @@
                 `;
             }).join('');
 
-            // Bind click expand behavior
-            document.querySelectorAll('.conclusion-card.expandable').forEach(card => {
-                card.addEventListener('click', () => {
-                    const isExpanded = card.getAttribute('data-expanded') === 'true';
-                    const fullText = decodeURIComponent(card.getAttribute('data-full-text'));
-                    const truncatedText = decodeURIComponent(card.getAttribute('data-truncated-text'));
-                    const contentDiv = card.querySelector('.conclusion-content');
-                    const hintDiv = card.querySelector('.conclusion-expand-hint');
-
-                    if (isExpanded) {
-                        contentDiv.innerText = truncatedText;
-                        hintDiv.innerText = 'Click to expand';
-                        card.setAttribute('data-expanded', 'false');
-                    } else {
-                        contentDiv.innerText = fullText;
-                        hintDiv.innerText = 'Click to collapse';
-                        card.setAttribute('data-expanded', 'true');
-                    }
-                });
-            });
-
             // Update Pagination Status
             const startIdx = (state.conclusionsPage - 1) * state.conclusionsSize + 1;
             const endIdx = Math.min(state.conclusionsPage * state.conclusionsSize, state.conclusionsTotal);
@@ -2194,13 +2213,6 @@
                 `;
             }).join('');
 
-            // Bind session click handler
-            document.querySelectorAll('.session-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    const sessionId = card.getAttribute('data-session-id');
-                    openSessionModal(sessionId);
-                });
-            });
         }
 
         /* 4. OBSERVATIONS TAB CONTROLLER */
@@ -2277,15 +2289,6 @@
             }
 
             DOM.observationsTimelineContainer.innerHTML = timelineHtml;
-
-            // Bind session click events inside timeline
-            DOM.observationsTimelineContainer.querySelectorAll('.timeline-item-session').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const sId = link.getAttribute('data-session-id');
-                    openSessionModal(sId);
-                });
-            });
         }
 
         /* SESSION MODAL DETAILS HANDLER */
