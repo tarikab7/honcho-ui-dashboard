@@ -1492,6 +1492,56 @@
                     closeModal();
                 }
             });
+
+            // ⚡ Bolt Performance Optimization: Event Delegation
+            // Attaching single event listeners to parent containers instead of binding individual
+            // listeners to dynamically generated cards during innerHTML replacement.
+            // This prevents memory leaks and avoids blocking the main thread when rendering large lists.
+
+            // Conclusions card expand/collapse delegation
+            DOM.conclusionsGridContainer.addEventListener('click', (e) => {
+                const card = e.target.closest('.conclusion-card.expandable');
+                if (!card) return;
+
+                const isExpanded = card.getAttribute('data-expanded') === 'true';
+                const fullText = decodeURIComponent(card.getAttribute('data-full-text'));
+                const truncatedText = decodeURIComponent(card.getAttribute('data-truncated-text'));
+                const contentDiv = card.querySelector('.conclusion-content');
+                const hintDiv = card.querySelector('.conclusion-expand-hint');
+
+                if (isExpanded) {
+                    contentDiv.innerText = truncatedText;
+                    hintDiv.innerText = 'Click to expand';
+                    card.setAttribute('data-expanded', 'false');
+                } else {
+                    contentDiv.innerText = fullText;
+                    hintDiv.innerText = 'Click to collapse';
+                    card.setAttribute('data-expanded', 'true');
+                }
+            });
+
+            // Sessions card click delegation
+            DOM.sessionsGridContainer.addEventListener('click', (e) => {
+                const card = e.target.closest('.session-card');
+                if (!card) return;
+
+                const sessionId = card.getAttribute('data-session-id');
+                if (sessionId) {
+                    openSessionModal(sessionId);
+                }
+            });
+
+            // Observations timeline click delegation
+            DOM.observationsTimelineContainer.addEventListener('click', (e) => {
+                const link = e.target.closest('.timeline-item-session');
+                if (!link) return;
+
+                e.stopPropagation();
+                const sessionId = link.getAttribute('data-session-id');
+                if (sessionId) {
+                    openSessionModal(sessionId);
+                }
+            });
         }
 
         // Switch active tab view
@@ -2099,27 +2149,6 @@
                 `;
             }).join('');
 
-            // Bind click expand behavior
-            document.querySelectorAll('.conclusion-card.expandable').forEach(card => {
-                card.addEventListener('click', () => {
-                    const isExpanded = card.getAttribute('data-expanded') === 'true';
-                    const fullText = decodeURIComponent(card.getAttribute('data-full-text'));
-                    const truncatedText = decodeURIComponent(card.getAttribute('data-truncated-text'));
-                    const contentDiv = card.querySelector('.conclusion-content');
-                    const hintDiv = card.querySelector('.conclusion-expand-hint');
-
-                    if (isExpanded) {
-                        contentDiv.innerText = truncatedText;
-                        hintDiv.innerText = 'Click to expand';
-                        card.setAttribute('data-expanded', 'false');
-                    } else {
-                        contentDiv.innerText = fullText;
-                        hintDiv.innerText = 'Click to collapse';
-                        card.setAttribute('data-expanded', 'true');
-                    }
-                });
-            });
-
             // Update Pagination Status
             const startIdx = (state.conclusionsPage - 1) * state.conclusionsSize + 1;
             const endIdx = Math.min(state.conclusionsPage * state.conclusionsSize, state.conclusionsTotal);
@@ -2194,13 +2223,6 @@
                 `;
             }).join('');
 
-            // Bind session click handler
-            document.querySelectorAll('.session-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    const sessionId = card.getAttribute('data-session-id');
-                    openSessionModal(sessionId);
-                });
-            });
         }
 
         /* 4. OBSERVATIONS TAB CONTROLLER */
@@ -2277,15 +2299,6 @@
             }
 
             DOM.observationsTimelineContainer.innerHTML = timelineHtml;
-
-            // Bind session click events inside timeline
-            DOM.observationsTimelineContainer.querySelectorAll('.timeline-item-session').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const sId = link.getAttribute('data-session-id');
-                    openSessionModal(sId);
-                });
-            });
         }
 
         /* SESSION MODAL DETAILS HANDLER */
