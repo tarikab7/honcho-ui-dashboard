@@ -2084,7 +2084,7 @@
                 const truncatedContent = isLongText ? c.content.substring(0, 200) + '...' : c.content;
                 
                 return `
-                    <div class="conclusion-card ${isLongText ? 'expandable' : ''}" data-full-text="${encodeURIComponent(escapeHtml(c.content))}" data-truncated-text="${encodeURIComponent(escapeHtml(truncatedContent))}" data-expanded="false">
+                    <div class="conclusion-card ${isLongText ? 'expandable' : ''}" data-full-text="${encodeURIComponent(escapeHtml(c.content))}" data-truncated-text="${encodeURIComponent(escapeHtml(truncatedContent))}" data-expanded="false" ${isLongText ? 'tabindex="0" role="button" aria-expanded="false"' : ''}>
                         <div class="conclusion-meta">
                             <div class="conclusion-tags">
                                 <span class="tag blue">Observer: ${escapeHtml(c.observer_id)}</span>
@@ -2101,7 +2101,7 @@
 
             // Bind click expand behavior
             document.querySelectorAll('.conclusion-card.expandable').forEach(card => {
-                card.addEventListener('click', () => {
+                const toggleCard = () => {
                     const isExpanded = card.getAttribute('data-expanded') === 'true';
                     const fullText = decodeURIComponent(card.getAttribute('data-full-text'));
                     const truncatedText = decodeURIComponent(card.getAttribute('data-truncated-text'));
@@ -2112,10 +2112,20 @@
                         contentDiv.innerText = truncatedText;
                         hintDiv.innerText = 'Click to expand';
                         card.setAttribute('data-expanded', 'false');
+                        card.setAttribute('aria-expanded', 'false');
                     } else {
                         contentDiv.innerText = fullText;
                         hintDiv.innerText = 'Click to collapse';
                         card.setAttribute('data-expanded', 'true');
+                        card.setAttribute('aria-expanded', 'true');
+                    }
+                };
+
+                card.addEventListener('click', toggleCard);
+                card.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleCard();
                     }
                 });
             });
@@ -2172,7 +2182,7 @@
                 }
 
                 return `
-                    <div class="session-card" data-session-id="${escapeHtml(s.id)}">
+                    <div class="session-card" data-session-id="${escapeHtml(s.id)}" tabindex="0" role="button" aria-label="View session details">
                         <div class="session-header">
                             <span class="session-id" title="${escapeHtml(s.id)}">${escapeHtml(shortenedId)}</span>
                             <span class="session-source-badge ${sourceClass}">${sourceText}</span>
@@ -2196,9 +2206,16 @@
 
             // Bind session click handler
             document.querySelectorAll('.session-card').forEach(card => {
-                card.addEventListener('click', () => {
+                const openSession = () => {
                     const sessionId = card.getAttribute('data-session-id');
                     openSessionModal(sessionId);
+                };
+                card.addEventListener('click', openSession);
+                card.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        openSession();
+                    }
                 });
             });
         }
